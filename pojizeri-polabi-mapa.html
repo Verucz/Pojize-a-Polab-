@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Pojizeří a Polabí — mapa oblasti</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EFE8D6;
+    --paper-dark:#E3DAC2;
+    --ink:#22303A;
+    --ink-soft:#4B5A63;
+    --river:#1F4E5F;
+    --river-light:#3D7A8C;
+    --moss:#5F7A3D;
+    --clay:#B5651D;
+    --rust:#A2402B;
+    --white:#FBF9F3;
+    --line:rgba(34,48,58,0.14);
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;}
+  body{
+    font-family:'Inter',sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    overflow:hidden;
+  }
+  /* ---------- Header ---------- */
+  header{
+    position:relative;
+    z-index:1200;
+    display:flex;
+    align-items:center;
+    gap:16px;
+    padding:12px 18px;
+    background:var(--white);
+    border-bottom:1px solid var(--line);
+  }
+  .logo{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-shrink:0;
+  }
+  .logo svg{width:40px;height:40px;flex-shrink:0;}
+  .logo .name{
+    font-family:'Fraunces',serif;
+    line-height:1.05;
+  }
+  .logo .name .big{
+    display:block;
+    font-size:17px;
+    font-weight:600;
+    letter-spacing:0.01em;
+    color:var(--river);
+  }
+  .logo .name .small{
+    display:block;
+    font-size:10.5px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--clay);
+    margin-top:1px;
+  }
+  .search-wrap{
+    flex:1;
+    max-width:340px;
+    position:relative;
+  }
+  .search-wrap input{
+    width:100%;
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    padding:9px 12px 9px 34px;
+    border-radius:9px;
+    border:1px solid var(--line);
+    background:var(--paper);
+    color:var(--ink);
+    outline:none;
+  }
+  .search-wrap input:focus{border-color:var(--river-light);}
+  .search-wrap svg{
+    position:absolute;
+    left:11px;top:50%;transform:translateY(-50%);
+    width:15px;height:15px;color:var(--ink-soft);
+  }
+  .filters{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-left:auto;
+  }
+  .chip{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-family:'Inter',sans-serif;
+    font-size:12.5px;
+    font-weight:600;
+    padding:7px 12px;
+    border-radius:100px;
+    border:1.5px solid var(--line);
+    background:var(--white);
+    color:var(--ink-soft);
+    cursor:pointer;
+    user-select:none;
+    transition:all .15s ease;
+    white-space:nowrap;
+  }
+  .chip .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .chip.active{
+    color:var(--white);
+    border-color:transparent;
+  }
+  .chip[data-cat="tourist"].active{background:var(--clay);}
+  .chip[data-cat="hotel"].active{background:var(--river-light);}
+  .chip[data-cat="restaurant"].active{background:var(--rust);}
+  .chip[data-cat="trip"].active{background:var(--moss);}
+  .chip:not(.active){opacity:0.55;}
+
+  /* ---------- Layout ---------- */
+  .layout{
+    position:relative;
+    height:calc(100% - 65px);
+    display:flex;
+  }
+  #map{flex:1;height:100%;}
+  .leaflet-container{background:var(--paper);font-family:'Inter',sans-serif;}
+
+  /* custom pin */
+  .pin{
+    width:30px;height:30px;
+    border-radius:50% 50% 50% 0;
+    transform:rotate(-45deg);
+    display:flex;align-items:center;justify-content:center;
+    border:2px solid var(--white);
+    box-shadow:0 2px 6px rgba(0,0,0,0.3);
+  }
+  .pin span{transform:rotate(45deg);font-size:14px;}
+  .pin.tourist{background:var(--clay);}
+  .pin.hotel{background:var(--river-light);}
+  .pin.restaurant{background:var(--rust);}
+  .pin.trip{background:var(--moss);}
+  .pin.has-note::after{
+    content:'';
+    position:absolute;
+    top:-3px;right:-3px;
+    width:9px;height:9px;
+    border-radius:50%;
+    background:#F2C230;
+    border:1.5px solid var(--white);
+    transform:rotate(45deg);
+  }
+
+  /* ---------- Detail panel ---------- */
+  #panel{
+    width:380px;
+    max-width:100%;
+    height:100%;
+    background:var(--white);
+    border-left:1px solid var(--line);
+    overflow-y:auto;
+    transform:translateX(100%);
+    transition:transform .28s cubic-bezier(.4,0,.2,1);
+    flex-shrink:0;
+    position:relative;
+  }
+  #panel.open{transform:translateX(0);}
+  .panel-empty{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    height:100%;padding:40px;text-align:center;color:var(--ink-soft);
+  }
+  .panel-empty svg{width:64px;height:64px;opacity:0.25;margin-bottom:14px;}
+  .panel-empty p{font-size:13.5px;line-height:1.5;max-width:220px;}
+
+  .panel-close{
+    position:absolute;top:14px;right:14px;
+    width:30px;height:30px;border-radius:50%;
+    border:none;background:var(--paper);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;z-index:5;
+  }
+  .panel-hero{
+    padding:22px 22px 16px;
+    border-bottom:1px solid var(--line);
+  }
+  .cat-badge{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    padding:4px 10px;border-radius:100px;color:var(--white);
+    margin-bottom:10px;
+  }
+  .cat-badge.tourist{background:var(--clay);}
+  .cat-badge.hotel{background:var(--river-light);}
+  .cat-badge.restaurant{background:var(--rust);}
+  .cat-badge.trip{background:var(--moss);}
+  .panel-hero h2{
+    font-family:'Fraunces',serif;
+    font-size:22px;font-weight:600;
+    margin:0 0 8px;color:var(--river);
+    padding-right:26px;
+  }
+  .panel-hero .desc{font-size:13.5px;line-height:1.55;color:var(--ink-soft);margin:0;}
+  .panel-hero .coords{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10.5px;color:var(--ink-soft);opacity:.7;margin-top:10px;
+  }
+
+  .panel-section{padding:18px 22px;border-bottom:1px solid var(--line);}
+  .panel-section h3{
+    font-family:'Inter',sans-serif;
+    font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--ink-soft);margin:0 0 12px;
+  }
+
+  .photo-grid{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;
+  }
+  .photo-grid .ph{
+    position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:var(--paper);
+  }
+  .photo-grid .ph img{width:100%;height:100%;object-fit:cover;display:block;}
+  .photo-grid .ph button{
+    position:absolute;top:3px;right:3px;width:19px;height:19px;border-radius:50%;
+    border:none;background:rgba(34,48,58,0.7);color:#fff;font-size:11px;line-height:1;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;
+  }
+  .add-photo-btn{
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    width:100%;padding:10px;border-radius:9px;
+    border:1.5px dashed var(--line);background:var(--paper);
+    font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;color:var(--ink-soft);
+    cursor:pointer;
+  }
+  .add-photo-btn:hover{border-color:var(--river-light);color:var(--river);}
+  input[type=file]{display:none;}
+
+  textarea#noteInput{
+    width:100%;min-height:100px;resize:vertical;
+    font-family:'Inter',sans-serif;font-size:13.5px;line-height:1.5;
+    padding:10px 12px;border-radius:9px;border:1.5px solid var(--line);
+    background:var(--paper);color:var(--ink);outline:none;
+  }
+  textarea#noteInput:focus{border-color:var(--river-light);}
+  .save-row{display:flex;align-items:center;gap:10px;margin-top:10px;}
+  .save-btn{
+    padding:9px 18px;border-radius:9px;border:none;background:var(--river);
+    color:var(--white);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;
+  }
+  .save-btn:hover{background:var(--river-light);}
+  .save-status{font-size:11.5px;color:var(--moss);font-weight:600;opacity:0;transition:opacity .2s;}
+  .save-status.show{opacity:1;}
+  .last-updated{font-size:11px;color:var(--ink-soft);opacity:.75;margin-top:8px;}
+
+  /* mobile */
+  @media (max-width:760px){
+    header{flex-wrap:wrap;padding:10px 12px;}
+    .filters{order:3;width:100%;margin-left:0;}
+    .search-wrap{order:2;max-width:none;flex:1 1 55%;}
+    #panel{
+      position:absolute;right:0;bottom:0;top:auto;
+      width:100%;height:78%;
+      border-left:none;border-top:1px solid var(--line);
+      border-radius:16px 16px 0 0;
+      transform:translateY(100%);
+    }
+    #panel.open{transform:translateY(0);}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg viewBox="0 0 40 40" fill="none">
+      <circle cx="20" cy="20" r="19" fill="var(--river)"/>
+      <path d="M4 24C10 18 13 26 19 21C25 16 28 24 34 19" stroke="#EFE8D6" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+      <path d="M4 15C10 22 13 12 19 17C25 22 28 13 34 18" stroke="var(--clay)" stroke-width="2.2" stroke-linecap="round" fill="none" opacity="0.9"/>
+    </svg>
+    <div class="name">
+      <span class="big">Pojizeří &amp; Polabí</span>
+      <span class="small">Turistická oblast</span>
+    </div>
+  </div>
+
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    <input id="searchInput" type="text" placeholder="Hledat místo…">
+  </div>
+
+  <div class="filters" id="filters">
+    <div class="chip active" data-cat="tourist"><span class="dot" style="background:var(--clay)"></span>Turistická místa</div>
+    <div class="chip active" data-cat="hotel"><span class="dot" style="background:var(--river-light)"></span>Hotely</div>
+    <div class="chip active" data-cat="restaurant"><span class="dot" style="background:var(--rust)"></span>Restaurace</div>
+    <div class="chip active" data-cat="trip"><span class="dot" style="background:var(--moss)"></span>Výlety</div>
+  </div>
+</header>
+
+<div class="layout">
+  <div id="map"></div>
+
+  <div id="panel">
+    <div class="panel-empty" id="panelEmpty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 20l-6-3V4l6 3 6-3 6 3v13l-6-3-6 3z"/><path d="M9 4v13M15 7v13"/></svg>
+      <p>Klepněte na značku v mapě. Ke každému místu můžete přidat vlastní fotografie a poznámku z výletu.</p>
+    </div>
+
+    <div id="panelContent" style="display:none;">
+      <button class="panel-close" id="panelClose">✕</button>
+      <div class="panel-hero">
+        <span class="cat-badge" id="pCatBadge"></span>
+        <h2 id="pName"></h2>
+        <p class="desc" id="pDesc"></p>
+        <div class="coords" id="pCoords"></div>
+      </div>
+
+      <div class="panel-section">
+        <h3>Moje fotografie</h3>
+        <div class="photo-grid" id="photoGrid"></div>
+        <label class="add-photo-btn">
+          <input type="file" id="photoInput" accept="image/*" multiple>
+          + Přidat fotografii
+        </label>
+      </div>
+
+      <div class="panel-section">
+        <h3>Můj záznam</h3>
+        <textarea id="noteInput" placeholder="Napište si poznámku k tomuto místu — dojmy, tipy, co nevynechat…"></textarea>
+        <div class="save-row">
+          <button class="save-btn" id="saveBtn">Uložit záznam</button>
+          <span class="save-status" id="saveStatus">Uloženo ✓</span>
+        </div>
+        <div class="last-updated" id="lastUpdated"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+/* ---------------- Data ---------------- */
+const CATS = {
+  tourist:{label:'Turistické místo', icon:'🏰'},
+  hotel:{label:'Hotel / ubytování', icon:'🛏️'},
+  restaurant:{label:'Restaurace', icon:'🍽️'},
+  trip:{label:'Výlet', icon:'🥾'}
+};
+
+const PLACES = [
+  {id:'loucen', cat:'tourist', name:'Zámek Loučeň', lat:50.3011, lng:15.0122,
+    desc:'Empírový zámek proslulý bludištěm v anglickém parku a labyrintáriem, oblíbený cíl výletů s dětmi.'},
+  {id:'skoda-muzeum', cat:'tourist', name:'Škoda Muzeum', lat:50.4142, lng:14.9114,
+    desc:'Expozice mapující více než sto let historie automobilky Škoda v Mladé Boleslavi.'},
+  {id:'baba-dedek', cat:'tourist', name:'Sopky Baba a Dědek', lat:50.4302, lng:14.9328,
+    desc:'Čedičové vrcholy dvou vyhaslých sopek ukryté v lesích u Kosmonos, s výhledem do kraje.'},
+  {id:'bela-zamek', cat:'tourist', name:'Zámek Bělá pod Bezdězem', lat:50.5253, lng:14.7961,
+    desc:'Zámek s muzeem Podbezdězí a příležitostnými výstavami výtvarného umění.'},
+  {id:'botanicus', cat:'tourist', name:'Botanicus Ostrá', lat:50.1775, lng:14.8386,
+    desc:'Historická vesnice umění a řemesel s bylinnou zahradou u Lysé nad Labem, oblíbená s dětmi.'},
+  {id:'podebrady', cat:'tourist', name:'Lázně Poděbrady', lat:50.1424, lng:15.1194,
+    desc:'Lázeňské město s léčivými minerálními prameny, kolonádou a muzeem filmových legend.'},
+  {id:'nymburk-hradby', cat:'tourist', name:'Hradby Nymburka', lat:50.1866, lng:15.0418,
+    desc:'Dobře dochované středověké městské opevnění s vodními příkopy v centru Nymburka.'},
+  {id:'smetana', cat:'tourist', name:'Památník Bedřicha Smetany', lat:50.3269, lng:14.9494,
+    desc:'Bývalá jabkenická myslivna, kde skladatel pobýval a komponoval, dnes malé muzeum.'},
+  {id:'mirakulum', cat:'tourist', name:'Mirakulum a Tankodrom Milovice', lat:50.2144, lng:14.8814,
+    desc:'Rozlehlý zábavní park a bývalý vojenský tankodrom — celodenní program pro rodiny.'},
+
+  {id:'penzion-polabi', cat:'hotel', name:'Penzion Polabí', lat:50.1520, lng:14.6520,
+    desc:'Rodinný penzion s restaurací, saunou a sportovním zázemím jen kousek od Prahy.'},
+  {id:'hotel-podebrady', cat:'hotel', name:'Lázeňský hotel Poděbrady', lat:50.1435, lng:15.1177,
+    desc:'Ubytování s wellness přímo v centru lázeňského parku v Poděbradech.'},
+  {id:'hotel-mb', cat:'hotel', name:'Hotel Mladá Boleslav', lat:50.4114, lng:14.9048,
+    desc:'Ubytování v centru města, výchozí bod pro návštěvu Škoda Muzea i okolních sopek.'},
+
+  {id:'hajenka', cat:'restaurant', name:'Hájenka', lat:50.1219, lng:14.8408,
+    desc:'Legendární hostinec v Kersku, kam si pravidelně chodil sednout spisovatel Bohumil Hrabal.'},
+  {id:'vsetaty-nadrazi', cat:'restaurant', name:'Restaurace na nádraží Všetaty', lat:50.3069, lng:14.5406,
+    desc:'Oblíbená zastávka na občerstvení na konci polabských pěších výletů.'},
+  {id:'kosik', cat:'restaurant', name:'Farma Košík', lat:50.5460, lng:14.8890,
+    desc:'Farmářská kuchyně v malé obci u severní hranice středních Čech.'},
+
+  {id:'benatecka-divocina', cat:'trip', name:'Benátecká divočina', lat:50.2900, lng:14.8250,
+    desc:'Náročnější cyklotrasa vedoucí k labyrintáriu zámku Loučeň i k bývalému tankodromu.'},
+  {id:'greenway-jizera', cat:'trip', name:'Greenway Jizera', lat:50.3550, lng:14.9750,
+    desc:'Cyklostezka podél řeky Jizery, která spojuje Český ráj s krajinou Polabí.'},
+  {id:'labska-stezka', cat:'trip', name:'Labská stezka', lat:50.1800, lng:14.9000,
+    desc:'Nenáročná cyklotrasa podél toku Labe, vhodná i pro rodiny s malými dětmi.'},
+  {id:'hrabalova-stezka', cat:'trip', name:'Naučná stezka Bohumila Hrabala', lat:50.1263, lng:14.8371,
+    desc:'Trasa přírodou Polabí kolem spisovatelovy chaty a legendárních míst z jeho děl.'},
+  {id:'svatojirsky-les', cat:'trip', name:'Svatojiřský les', lat:50.3150, lng:14.9700,
+    desc:'Procházkové trasy lesem na rozhraní Nymburska a Mladoboleslavska, oblíbené místo B. Smetany.'},
+  {id:'kokorinsko-vyhlidky', cat:'trip', name:'Polabské vyhlídky', lat:50.3600, lng:14.6500,
+    desc:'Nenáročná trasa s výhledy na Kokořínsko, Prahu i Polabskou rovinu, cca 15 km.'}
+];
+
+/* ---------------- Map setup ---------------- */
+const map = L.map('map', {zoomControl:false}).setView([50.28, 14.92], 10);
+L.control.zoom({position:'bottomright'}).addTo(map);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom:18,
+  attribution:'&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+const markers = {};
+let activeCats = new Set(Object.keys(CATS));
+let currentPlace = null;
+let currentPhotos = [];
+
+function makeIcon(place, hasNote){
+  return L.divIcon({
+    className:'',
+    html:`<div class="pin ${place.cat}${hasNote?' has-note':''}"><span>${CATS[place.cat].icon}</span></div>`,
+    iconSize:[30,30],
+    iconAnchor:[15,28],
+    popupAnchor:[0,-26]
+  });
+}
+
+async function hasSavedNote(id){
+  try{
+    const r = await window.storage.get('place:'+id, false);
+    if(!r) return false;
+    const data = JSON.parse(r.value);
+    return !!(data.note || (data.photos && data.photos.length));
+  }catch(e){ return false; }
+}
+
+async function buildMarkers(){
+  for(const place of PLACES){
+    const noted = await hasSavedNote(place.id);
+    const m = L.marker([place.lat, place.lng], {icon: makeIcon(place, noted)});
+    m.on('click', ()=>openPlace(place));
+    markers[place.id] = {marker:m, place, noted};
+    m.addTo(map);
+  }
+}
+buildMarkers();
+
+function applyFilters(){
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  Object.values(markers).forEach(({marker, place})=>{
+    const catOk = activeCats.has(place.cat);
+    const searchOk = !q || place.name.toLowerCase().includes(q);
+    if(catOk && searchOk){
+      if(!map.hasLayer(marker)) marker.addTo(map);
+    } else {
+      if(map.hasLayer(marker)) map.removeLayer(marker);
+    }
+  });
+}
+
+document.querySelectorAll('.chip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    const cat = chip.dataset.cat;
+    if(activeCats.has(cat)){ activeCats.delete(cat); chip.classList.remove('active'); }
+    else { activeCats.add(cat); chip.classList.add('active'); }
+    applyFilters();
+  });
+});
+document.getElementById('searchInput').addEventListener('input', applyFilters);
+
+/* ---------------- Detail panel ---------------- */
+const panel = document.getElementById('panel');
+const panelEmpty = document.getElementById('panelEmpty');
+const panelContent = document.getElementById('panelContent');
+
+async function openPlace(place){
+  currentPlace = place;
+  panel.classList.add('open');
+  panelEmpty.style.display = 'none';
+  panelContent.style.display = 'block';
+
+  document.getElementById('pCatBadge').textContent = CATS[place.cat].icon + ' ' + CATS[place.cat].label;
+  document.getElementById('pCatBadge').className = 'cat-badge ' + place.cat;
+  document.getElementById('pName').textContent = place.name;
+  document.getElementById('pDesc').textContent = place.desc;
+  document.getElementById('pCoords').textContent = `${place.lat.toFixed(4)}, ${place.lng.toFixed(4)}`;
+
+  document.getElementById('noteInput').value = '';
+  document.getElementById('lastUpdated').textContent = '';
+  currentPhotos = [];
+  renderPhotos();
+
+  try{
+    const r = await window.storage.get('place:'+place.id, false);
+    if(r){
+      const data = JSON.parse(r.value);
+      document.getElementById('noteInput').value = data.note || '';
+      currentPhotos = data.photos || [];
+      renderPhotos();
+      if(data.updatedAt){
+        const d = new Date(data.updatedAt);
+        document.getElementById('lastUpdated').textContent = 'Naposledy upraveno ' + d.toLocaleDateString('cs-CZ') + ' ' + d.toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'});
+      }
+    }
+  }catch(e){ /* no saved record yet */ }
+
+  map.panTo([place.lat, place.lng]);
+}
+
+document.getElementById('panelClose').addEventListener('click', ()=>{
+  panel.classList.remove('open');
+  currentPlace = null;
+});
+
+function renderPhotos(){
+  const grid = document.getElementById('photoGrid');
+  grid.innerHTML = '';
+  currentPhotos.forEach((src, i)=>{
+    const div = document.createElement('div');
+    div.className = 'ph';
+    div.innerHTML = `<img src="${src}"><button data-i="${i}">✕</button>`;
+    div.querySelector('button').addEventListener('click', (e)=>{
+      e.stopPropagation();
+      currentPhotos.splice(i,1);
+      renderPhotos();
+    });
+    grid.appendChild(div);
+  });
+}
+
+document.getElementById('photoInput').addEventListener('change', (e)=>{
+  const files = Array.from(e.target.files || []);
+  files.forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      currentPhotos.push(reader.result);
+      renderPhotos();
+    };
+    reader.readAsDataURL(file);
+  });
+  e.target.value = '';
+});
+
+document.getElementById('saveBtn').addEventListener('click', async ()=>{
+  if(!currentPlace) return;
+  const note = document.getElementById('noteInput').value;
+  const record = { note, photos: currentPhotos, updatedAt: Date.now() };
+  try{
+    await window.storage.set('place:'+currentPlace.id, JSON.stringify(record), false);
+    const status = document.getElementById('saveStatus');
+    status.classList.add('show');
+    setTimeout(()=>status.classList.remove('show'), 1800);
+    document.getElementById('lastUpdated').textContent = 'Naposledy upraveno právě teď';
+
+    const entry = markers[currentPlace.id];
+    entry.noted = true;
+    entry.marker.setIcon(makeIcon(currentPlace, true));
+  }catch(err){
+    alert('Záznam se nepodařilo uložit. Zkuste to prosím znovu.');
+  }
+});
+</script>
+</body>
+</html>
