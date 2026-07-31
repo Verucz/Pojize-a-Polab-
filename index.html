@@ -32,6 +32,8 @@
     background:var(--paper);
     color:var(--ink);
     overflow:hidden;
+    display:flex;
+    flex-direction:column;
   }
   /* ---------- Header ---------- */
   header{
@@ -43,6 +45,7 @@
     padding:12px 18px;
     background:var(--white);
     border-bottom:1px solid var(--line);
+    flex-shrink:0;
   }
   .logo{
     display:flex;
@@ -167,7 +170,8 @@
   /* ---------- Layout ---------- */
   .layout{
     position:relative;
-    height:calc(100% - 65px);
+    flex:1;
+    min-height:0;
     display:flex;
   }
   #map{flex:1;height:100%;}
@@ -453,6 +457,73 @@
     .trip-bar-actions{order:3;justify-content:flex-end;}
   }
 
+  /* ---------- Auth ---------- */
+  .auth-btn{
+    display:flex;align-items:center;gap:7px;
+    font-family:'Inter',sans-serif;font-size:12.5px;font-weight:700;
+    padding:8px 14px;border-radius:100px;border:1.5px solid var(--line);
+    background:var(--white);color:var(--ink);cursor:pointer;white-space:nowrap;flex-shrink:0;
+  }
+  .auth-btn:hover{background:var(--paper);}
+  .user-chip{
+    display:flex;align-items:center;gap:9px;
+    font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;color:var(--ink);
+    flex-shrink:0;white-space:nowrap;
+  }
+  .user-chip .avatar{
+    width:26px;height:26px;border-radius:50%;background:var(--river);color:var(--white);
+    display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;
+  }
+  .user-chip button{
+    font-family:'Inter',sans-serif;font-size:11.5px;font-weight:600;color:var(--ink-soft);
+    background:none;border:none;cursor:pointer;text-decoration:underline;
+  }
+  #authOverlay{
+    position:fixed;inset:0;z-index:2500;
+    background:rgba(34,48,58,0.45);
+    display:flex;align-items:center;justify-content:center;
+    opacity:0;pointer-events:none;transition:opacity .2s ease;
+  }
+  #authOverlay.open{opacity:1;pointer-events:auto;}
+  #authModal{
+    width:360px;max-width:92vw;background:var(--white);border-radius:16px;
+    padding:26px 24px;box-shadow:0 20px 50px rgba(0,0,0,0.25);
+    transform:translateY(14px);transition:transform .2s ease;position:relative;
+  }
+  #authOverlay.open #authModal{transform:translateY(0);}
+  .auth-close{
+    position:absolute;top:14px;right:14px;width:28px;height:28px;border-radius:50%;
+    border:none;background:var(--paper);display:flex;align-items:center;justify-content:center;cursor:pointer;
+  }
+  .auth-tabs{display:flex;gap:6px;margin-bottom:18px;background:var(--paper);border-radius:10px;padding:3px;}
+  .auth-tab{
+    flex:1;text-align:center;padding:8px;border-radius:8px;cursor:pointer;
+    font-family:'Inter',sans-serif;font-size:12.5px;font-weight:700;color:var(--ink-soft);
+  }
+  .auth-tab.active{background:var(--white);color:var(--river);}
+  #authModal h2{font-family:'Fraunces',serif;font-size:19px;color:var(--river);margin:0 0 4px;}
+  #authModal .sub{font-size:12.5px;color:var(--ink-soft);margin:0 0 18px;}
+  .auth-field{margin-bottom:12px;}
+  .auth-field label{display:block;font-size:11.5px;font-weight:700;color:var(--ink-soft);margin-bottom:5px;}
+  .auth-field input{
+    width:100%;font-family:'Inter',sans-serif;font-size:13.5px;padding:10px 12px;
+    border-radius:9px;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);outline:none;
+  }
+  .auth-field input:focus{border-color:var(--river-light);}
+  .auth-submit{
+    width:100%;padding:11px;border-radius:9px;border:none;background:var(--river);color:var(--white);
+    font-family:'Inter',sans-serif;font-size:13.5px;font-weight:700;cursor:pointer;margin-top:6px;
+  }
+  .auth-submit:hover{background:var(--river-light);}
+  .auth-submit:disabled{opacity:0.6;cursor:default;}
+  .auth-msg{font-size:12px;margin-top:10px;line-height:1.4;}
+  .auth-msg.error{color:var(--rust);}
+  .auth-msg.success{color:#1F7A3A;}
+  .auth-gate-note{
+    font-size:11.5px;color:var(--ink-soft);background:var(--paper);border-radius:9px;
+    padding:10px 12px;margin-top:10px;line-height:1.4;
+  }
+
   /* mobile */
   @media (max-width:760px){
     header{flex-wrap:wrap;padding:10px 12px;}
@@ -460,6 +531,7 @@
     .filters{order:3;width:100%;margin-left:0;}
     .search-wrap{order:2;max-width:none;flex:1 1 40%;}
     .my-places-btn{order:2;}
+    .auth-btn, .user-chip{order:2;}
     #panel{
       position:absolute;right:0;bottom:0;top:auto;
       width:100%;height:78%;
@@ -511,6 +583,8 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
     Moje cíle <span class="count" id="myPlacesCount">0</span>
   </button>
+
+  <div id="authArea"></div>
 </header>
 
 <div class="layout">
@@ -598,6 +672,31 @@
   </div>
 </div>
 
+<div id="authOverlay">
+  <div id="authModal">
+    <button class="auth-close" id="authClose">✕</button>
+    <div class="auth-tabs">
+      <div class="auth-tab active" data-mode="login">Přihlásit se</div>
+      <div class="auth-tab" data-mode="signup">Registrace</div>
+    </div>
+    <h2 id="authTitle">Přihlásit se</h2>
+    <p class="sub" id="authSub">Přihlas se, ať si můžeš ukládat navštívená místa, fotky a poznámky.</p>
+    <form id="authForm">
+      <div class="auth-field">
+        <label>E-mail</label>
+        <input type="email" id="authEmail" required autocomplete="email">
+      </div>
+      <div class="auth-field">
+        <label>Heslo</label>
+        <input type="password" id="authPassword" required autocomplete="current-password" minlength="6">
+      </div>
+      <button type="submit" class="auth-submit" id="authSubmit">Přihlásit se</button>
+      <div class="auth-msg" id="authMsg"></div>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
 /* ---------------- Data ---------------- */
@@ -657,6 +756,8 @@ const PLACES = [
     desc:'Zámecký park tvořený francouzským libosadem a anglickým parkem, zdobený sochařskou výzdobou z dílen M. B. Brauna, v jedinečném panoramatu se zámkem a kostelem sv. Jana Křtitele.'},
   {id:'hradby-nymburk', cat:'tourist', name:'Středověké hradby Nymburk', lat:50.18611, lng:15.04167,
     desc:'Jeden z nejkvalitnějších příkladů středověkého městského opevnění v Čechách, budovaný od konce 13. století za vlády Václava II., s dochovanými věžemi a částí vodních příkopů.'},
+  {id:'zoo-chleby', cat:'tourist', name:'Zoopark Chleby', lat:50.18500, lng:15.07500,
+    desc:'Menší zoopark v obci Chleby v okolí rozhledny Romanky, oblíbený cíl rodinných výletů po rovinaté krajině Nymburska.', tags:['rodiny']},
 
   // --- Muzea a galerie ---
   {id:'skoda-muzeum', cat:'museum', name:'Škoda Muzeum', lat:50.4142, lng:14.9114,
@@ -687,6 +788,8 @@ const PLACES = [
     desc:'Průmyslový areál v Dobrovici, kde se cukr nepřetržitě vyrábí už od roku 1831 — symbol dlouhé cukrovarnické tradice regionu.'},
   {id:'kostel-sv-havla-mb', cat:'architecture', name:'Kostel sv. Havla, Mladá Boleslav', lat:50.41200, lng:14.90200,
     desc:'Kostel s přilehlou Hejdovou zahradou nabízející vyhlídku na Staré Město, díky výborné akustice hostí i koncerty.'},
+  {id:'sklarny-crystal-bohemia', cat:'architecture', name:'Sklárny Crystal BOHEMIA', lat:50.14300, lng:15.11500,
+    desc:'Sklářská huť v Poděbradech navazující na tradici výroby broušeného křišťálu založenou v roce 1877, dnes jeden z předních světových výrobců olovnatého křišťálu.'},
   {id:'beniesova-vila', cat:'architecture', name:'Beniesova vila', lat:50.20910, lng:14.84274,
     desc:'Secesní vila v okolí Lysé nad Labem, ukázka meziválečné rezidenční architektury v regionu.'},
   {id:'fara-dolni-krupa', cat:'architecture', name:'Fara Dolní Krupá', lat:50.54590, lng:14.86792,
@@ -805,6 +908,14 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution:'&copy; OpenStreetMap contributors'
 }).addTo(map);
 
+/* ---------------- Supabase ---------------- */
+const SUPABASE_URL = 'https://mzhdhyfkktjhxauytpjj.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_MuVuCnSBNU4YVbrB-E0yTg_FWmbt74O';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentUser = null;
+let recordsCache = {}; // place_id -> {visited, visited_at, note, photos, updated_at}
+
 const markers = {};
 let activeCats = new Set(Object.keys(CATS));
 let activeTagFilters = new Set();
@@ -824,23 +935,133 @@ function makeIcon(place, visited){
   });
 }
 
-async function loadVisitedIndex(){
-  try{
-    const r = await window.storage.get('visited-index', false);
-    if(r){
-      const arr = JSON.parse(r.value);
-      visitedMap = {};
-      arr.forEach(entry => { visitedMap[entry.id] = entry.visitedAt; });
-    }
-  }catch(e){ visitedMap = {}; }
+/* ---- Auth UI ---- */
+const authOverlay = document.getElementById('authOverlay');
+const authArea = document.getElementById('authArea');
+let authMode = 'login';
+
+function renderAuthArea(){
+  authArea.innerHTML = '';
+  if(currentUser){
+    const initial = (currentUser.email || '?')[0].toUpperCase();
+    const chip = document.createElement('div');
+    chip.className = 'user-chip';
+    chip.innerHTML = `<span class="avatar">${initial}</span><span>${currentUser.email}</span><button id="logoutBtn">Odhlásit</button>`;
+    authArea.appendChild(chip);
+    document.getElementById('logoutBtn').addEventListener('click', async ()=>{
+      await sb.auth.signOut();
+    });
+  } else {
+    const btn = document.createElement('button');
+    btn.className = 'auth-btn';
+    btn.textContent = 'Přihlásit se';
+    btn.addEventListener('click', ()=> openAuthModal('login'));
+    authArea.appendChild(btn);
+  }
 }
 
-async function saveVisitedIndex(){
-  const arr = Object.keys(visitedMap).map(id => ({id, visitedAt: visitedMap[id]}));
-  try{
-    await window.storage.set('visited-index', JSON.stringify(arr), false);
-  }catch(e){ /* best effort */ }
+function openAuthModal(mode){
+  authMode = mode;
+  updateAuthTabs();
+  document.getElementById('authMsg').textContent = '';
+  authOverlay.classList.add('open');
 }
+function closeAuthModal(){
+  authOverlay.classList.remove('open');
+}
+function updateAuthTabs(){
+  document.querySelectorAll('.auth-tab').forEach(t=>{
+    t.classList.toggle('active', t.dataset.mode === authMode);
+  });
+  const isLogin = authMode === 'login';
+  document.getElementById('authTitle').textContent = isLogin ? 'Přihlásit se' : 'Vytvořit účet';
+  document.getElementById('authSub').textContent = isLogin
+    ? 'Přihlas se, ať si můžeš ukládat navštívená místa, fotky a poznámky.'
+    : 'Založ si účet zdarma — vaše data pak najdete na jakémkoli zařízení.';
+  document.getElementById('authSubmit').textContent = isLogin ? 'Přihlásit se' : 'Zaregistrovat se';
+}
+
+document.querySelectorAll('.auth-tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    authMode = tab.dataset.mode;
+    updateAuthTabs();
+    document.getElementById('authMsg').textContent = '';
+  });
+});
+document.getElementById('authClose').addEventListener('click', closeAuthModal);
+authOverlay.addEventListener('click', (e)=>{ if(e.target === authOverlay) closeAuthModal(); });
+
+document.getElementById('authForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const msg = document.getElementById('authMsg');
+  const submitBtn = document.getElementById('authSubmit');
+  msg.className = 'auth-msg';
+  msg.textContent = '';
+  submitBtn.disabled = true;
+  try{
+    if(authMode === 'login'){
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if(error) throw error;
+      closeAuthModal();
+      document.getElementById('authForm').reset();
+    } else {
+      const { data, error } = await sb.auth.signUp({ email, password });
+      if(error) throw error;
+      if(data.session){
+        closeAuthModal();
+        document.getElementById('authForm').reset();
+      } else {
+        msg.className = 'auth-msg success';
+        msg.textContent = 'Účet vytvořen — zkontroluj e-mail a potvrď registraci, pak se přihlas.';
+      }
+    }
+  } catch(err){
+    msg.className = 'auth-msg error';
+    msg.textContent = err.message === 'Invalid login credentials'
+      ? 'Nesprávný e-mail nebo heslo.'
+      : (err.message || 'Něco se nepovedlo. Zkus to prosím znovu.');
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+
+function requireAuth(){
+  if(currentUser) return true;
+  openAuthModal('login');
+  return false;
+}
+
+/* ---- Data loading from Supabase ---- */
+async function loadRecords(){
+  recordsCache = {};
+  visitedMap = {};
+  if(!currentUser) return;
+  const { data, error } = await sb.from('place_records').select('*').eq('user_id', currentUser.id);
+  if(error){ console.error(error); return; }
+  (data || []).forEach(row=>{
+    recordsCache[row.place_id] = row;
+    if(row.visited) visitedMap[row.place_id] = new Date(row.visited_at).getTime();
+  });
+}
+
+async function refreshAfterAuthChange(){
+  await loadRecords();
+  updateMyPlacesCount();
+  Object.values(markers).forEach(({marker, place})=>{
+    marker.setIcon(makeIcon(place, !!visitedMap[place.id]));
+  });
+  if(currentPlace) updateVisitedToggleUI(currentPlace);
+  if(dashboardOverlay.classList.contains('open')) renderDashboard();
+  if(!currentUser && currentPlace) loadPlacePanelData(currentPlace);
+}
+
+sb.auth.onAuthStateChange(async (event, session)=>{
+  currentUser = session ? session.user : null;
+  renderAuthArea();
+  await refreshAfterAuthChange();
+});
 
 function buildMarkers(){
   for(const place of PLACES){
@@ -856,7 +1077,11 @@ function buildMarkers(){
 }
 
 async function initApp(){
-  await loadVisitedIndex();
+  renderAuthArea();
+  const { data: { session } } = await sb.auth.getSession();
+  currentUser = session ? session.user : null;
+  renderAuthArea();
+  await loadRecords();
   buildMarkers();
   updateMyPlacesCount();
 }
@@ -925,26 +1150,37 @@ async function openPlace(place){
     'https://www.google.com/search?q=' + encodeURIComponent(place.name + ' site:pojizeriapolabi.cz');
 
   updateVisitedToggleUI(place);
+  loadPlacePanelData(place);
+
+  map.panTo([place.lat, place.lng]);
+}
+
+function loadPlacePanelData(place){
   document.getElementById('noteInput').value = '';
   document.getElementById('lastUpdated').textContent = '';
   currentPhotos = [];
-  renderPhotos();
 
-  try{
-    const r = await window.storage.get('place:'+place.id, false);
-    if(r){
-      const data = JSON.parse(r.value);
-      document.getElementById('noteInput').value = data.note || '';
-      currentPhotos = data.photos || [];
-      renderPhotos();
-      if(data.updatedAt){
-        const d = new Date(data.updatedAt);
-        document.getElementById('lastUpdated').textContent = 'Naposledy upraveno ' + d.toLocaleDateString('cs-CZ') + ' ' + d.toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'});
-      }
+  const gate = document.getElementById('authGateNote');
+  if(gate) gate.remove();
+
+  if(!currentUser){
+    renderPhotos();
+    const note = document.getElementById('noteInput');
+    note.parentElement.insertAdjacentHTML('beforeend',
+      '<div class="auth-gate-note" id="authGateNote">Pro ukládání fotek a poznámek se prosím přihlas.</div>');
+    return;
+  }
+
+  const rec = recordsCache[place.id];
+  if(rec){
+    document.getElementById('noteInput').value = rec.note || '';
+    currentPhotos = rec.photos || [];
+    if(rec.updated_at){
+      const d = new Date(rec.updated_at);
+      document.getElementById('lastUpdated').textContent = 'Naposledy upraveno ' + d.toLocaleDateString('cs-CZ') + ' ' + d.toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'});
     }
-  }catch(e){ /* no saved record yet */ }
-
-  map.panTo([place.lat, place.lng]);
+  }
+  renderPhotos();
 }
 
 document.getElementById('panelClose').addEventListener('click', ()=>{
@@ -969,6 +1205,7 @@ function renderPhotos(){
 }
 
 document.getElementById('photoInput').addEventListener('change', (e)=>{
+  if(!requireAuth()){ e.target.value=''; return; }
   const files = Array.from(e.target.files || []);
   files.forEach(file=>{
     const reader = new FileReader();
@@ -983,10 +1220,25 @@ document.getElementById('photoInput').addEventListener('change', (e)=>{
 
 document.getElementById('saveBtn').addEventListener('click', async ()=>{
   if(!currentPlace) return;
+  if(!requireAuth()) return;
   const note = document.getElementById('noteInput').value;
-  const record = { note, photos: currentPhotos, updatedAt: Date.now() };
+  const wasVisited = !!visitedMap[currentPlace.id];
+  const nowIso = new Date().toISOString();
+  const payload = {
+    user_id: currentUser.id,
+    place_id: currentPlace.id,
+    note,
+    photos: currentPhotos,
+    visited: wasVisited,
+    visited_at: wasVisited ? new Date(visitedMap[currentPlace.id]).toISOString() : null,
+    updated_at: nowIso
+  };
   try{
-    await window.storage.set('place:'+currentPlace.id, JSON.stringify(record), false);
+    const { data, error } = await sb.from('place_records')
+      .upsert(payload, { onConflict: 'user_id,place_id' })
+      .select().single();
+    if(error) throw error;
+    recordsCache[currentPlace.id] = data;
     const status = document.getElementById('saveStatus');
     status.classList.add('show');
     setTimeout(()=>status.classList.remove('show'), 1800);
@@ -1012,17 +1264,41 @@ function updateVisitedToggleUI(place){
 
 document.getElementById('visitedToggle').addEventListener('click', async ()=>{
   if(!currentPlace) return;
+  if(!requireAuth()) return;
   const id = currentPlace.id;
-  if(visitedMap[id]){
-    delete visitedMap[id];
-  } else {
-    visitedMap[id] = Date.now();
-  }
-  await saveVisitedIndex();
+  const nowVisited = !visitedMap[id];
+  const nowIso = new Date().toISOString();
+
+  if(nowVisited){ visitedMap[id] = Date.now(); } else { delete visitedMap[id]; }
   updateVisitedToggleUI(currentPlace);
   updateMyPlacesCount();
   const entry = markers[id];
-  if(entry) entry.marker.setIcon(makeIcon(currentPlace, !!visitedMap[id]));
+  if(entry) entry.marker.setIcon(makeIcon(currentPlace, nowVisited));
+
+  const existing = recordsCache[id] || {};
+  const payload = {
+    user_id: currentUser.id,
+    place_id: id,
+    note: existing.note || '',
+    photos: existing.photos || [],
+    visited: nowVisited,
+    visited_at: nowVisited ? nowIso : null,
+    updated_at: nowIso
+  };
+  try{
+    const { data, error } = await sb.from('place_records')
+      .upsert(payload, { onConflict: 'user_id,place_id' })
+      .select().single();
+    if(error) throw error;
+    recordsCache[id] = data;
+  }catch(err){
+    // revert on failure
+    if(nowVisited){ delete visitedMap[id]; } else { visitedMap[id] = Date.now(); }
+    updateVisitedToggleUI(currentPlace);
+    updateMyPlacesCount();
+    if(entry) entry.marker.setIcon(makeIcon(currentPlace, !!visitedMap[id]));
+    alert('Nepodařilo se uložit. Zkus to prosím znovu.');
+  }
 });
 
 /* ---------------- Dashboard "Moje cíle" ---------------- */
@@ -1102,6 +1378,7 @@ function getPinColor(cat){
 }
 
 function openDashboard(){
+  if(!requireAuth()) return;
   renderDashboard();
   dashboardOverlay.classList.add('open');
 }
@@ -1116,23 +1393,33 @@ dashboardOverlay.addEventListener('click', (e)=>{
 });
 
 document.getElementById('dashResetBtn').addEventListener('click', async ()=>{
+  if(!currentUser) return;
   const count = Object.keys(visitedMap).length;
   if(count === 0) return;
   const ok = confirm(`Opravdu chcete odznačit všech ${count} navštívených míst? Vaše fotky a poznámky u jednotlivých míst zůstanou zachované, smaže se jen příznak návštěvy.`);
   if(!ok) return;
 
   const idsToClear = Object.keys(visitedMap);
-  visitedMap = {};
-  await saveVisitedIndex();
+  try{
+    const { error } = await sb.from('place_records')
+      .update({ visited: false, visited_at: null, updated_at: new Date().toISOString() })
+      .eq('user_id', currentUser.id)
+      .in('place_id', idsToClear);
+    if(error) throw error;
 
-  idsToClear.forEach(id=>{
-    const entry = markers[id];
-    if(entry) entry.marker.setIcon(makeIcon(entry.place, false));
-  });
+    idsToClear.forEach(id=>{
+      delete visitedMap[id];
+      if(recordsCache[id]){ recordsCache[id].visited = false; recordsCache[id].visited_at = null; }
+      const entry = markers[id];
+      if(entry) entry.marker.setIcon(makeIcon(entry.place, false));
+    });
 
-  updateMyPlacesCount();
-  renderDashboard();
-  if(currentPlace) updateVisitedToggleUI(currentPlace);
+    updateMyPlacesCount();
+    renderDashboard();
+    if(currentPlace) updateVisitedToggleUI(currentPlace);
+  }catch(err){
+    alert('Reset se nepodařil. Zkus to prosím znovu.');
+  }
 });
 
 document.getElementById('dashSort').addEventListener('change', (e)=>{
