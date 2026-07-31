@@ -18,7 +18,11 @@
     --moss:#279547;
     --clay:#B5651D;
     --rust:#A2402B;
+    --plum:#8B4F9E;
+    --gold:#B8901F;
+    --teal:#1E7A72;
     --white:#FBF9F3;
+    --gold-accent:#D9A62A;
     --line:rgba(34,48,58,0.14);
   }
   *{box-sizing:border-box;}
@@ -118,10 +122,47 @@
     border-color:transparent;
   }
   .chip[data-cat="tourist"].active{background:var(--clay);}
+  .chip[data-cat="museum"].active{background:var(--plum);}
+  .chip[data-cat="architecture"].active{background:var(--gold);}
+  .chip[data-cat="sport"].active{background:var(--moss);}
   .chip[data-cat="hotel"].active{background:var(--river-light);}
   .chip[data-cat="restaurant"].active{background:var(--rust);}
-  .chip[data-cat="trip"].active{background:var(--moss);}
+  .chip[data-cat="trip"].active{background:var(--teal);}
   .chip:not(.active){opacity:0.55;}
+  .extra-filters{display:flex;gap:8px;margin-left:6px;padding-left:10px;border-left:1.5px solid var(--line);}
+  .chip-extra{
+    display:flex;align-items:center;gap:5px;
+    font-family:'Inter',sans-serif;font-size:12px;font-weight:600;
+    padding:7px 11px;border-radius:100px;border:1.5px solid var(--line);
+    background:var(--white);color:var(--ink-soft);cursor:pointer;user-select:none;white-space:nowrap;
+  }
+  .chip-extra.active{background:var(--ink);color:var(--white);border-color:var(--ink);}
+  .tag-pills{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+  .tag-pill{
+    font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:100px;
+    background:rgba(50,43,127,0.1);color:var(--river);
+  }
+  .more-info-link{
+    display:inline-flex;align-items:center;gap:5px;margin-top:12px;
+    font-family:'Inter',sans-serif;font-size:12px;font-weight:600;
+    color:var(--river);text-decoration:none;
+  }
+  .more-info-link:hover{text-decoration:underline;}
+
+  /* Moje cíle button */
+  .my-places-btn{
+    display:flex;align-items:center;gap:7px;
+    font-family:'Inter',sans-serif;font-size:12.5px;font-weight:700;
+    padding:8px 14px;border-radius:100px;border:none;
+    background:var(--river);color:var(--white);cursor:pointer;
+    white-space:nowrap;flex-shrink:0;
+  }
+  .my-places-btn:hover{background:var(--river-light);}
+  .my-places-btn svg{width:14px;height:14px;}
+  .my-places-btn .count{
+    background:rgba(255,255,255,0.25);border-radius:100px;
+    padding:1px 7px;font-size:11px;
+  }
 
   /* ---------- Layout ---------- */
   .layout{
@@ -143,18 +184,24 @@
   }
   .pin span{transform:rotate(45deg);font-size:14px;}
   .pin.tourist{background:var(--clay);}
+  .pin.museum{background:var(--plum);}
+  .pin.architecture{background:var(--gold);}
+  .pin.sport{background:var(--moss);}
   .pin.hotel{background:var(--river-light);}
   .pin.restaurant{background:var(--rust);}
-  .pin.trip{background:var(--moss);}
-  .pin.has-note::after{
-    content:'';
+  .pin.trip{background:var(--teal);}
+  .pin.visited::after{
+    content:'✓';
     position:absolute;
-    top:-3px;right:-3px;
-    width:9px;height:9px;
+    top:-5px;right:-5px;
+    width:15px;height:15px;
     border-radius:50%;
-    background:#F2C230;
+    background:#2E9F4F;
     border:1.5px solid var(--white);
     transform:rotate(45deg);
+    color:var(--white);
+    font-size:9px;font-weight:900;
+    display:flex;align-items:center;justify-content:center;
   }
 
   /* ---------- Detail panel ---------- */
@@ -196,9 +243,12 @@
     margin-bottom:10px;
   }
   .cat-badge.tourist{background:var(--clay);}
+  .cat-badge.museum{background:var(--plum);}
+  .cat-badge.architecture{background:var(--gold);}
+  .cat-badge.sport{background:var(--moss);}
   .cat-badge.hotel{background:var(--river-light);}
   .cat-badge.restaurant{background:var(--rust);}
-  .cat-badge.trip{background:var(--moss);}
+  .cat-badge.trip{background:var(--teal);}
   .panel-hero h2{
     font-family:'Fraunces',serif;
     font-size:22px;font-weight:600;
@@ -209,6 +259,27 @@
   .panel-hero .coords{
     font-family:'JetBrains Mono',monospace;
     font-size:10.5px;color:var(--ink-soft);opacity:.7;margin-top:10px;
+  }
+  .visited-toggle{
+    display:flex;align-items:center;gap:8px;
+    width:100%;margin-top:14px;padding:10px 14px;
+    border-radius:9px;border:1.5px solid var(--line);
+    background:var(--paper);cursor:pointer;
+    font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:var(--ink-soft);
+    transition:all .15s ease;
+  }
+  .visited-toggle .check{
+    width:20px;height:20px;border-radius:50%;flex-shrink:0;
+    border:2px solid var(--ink-soft);
+    display:flex;align-items:center;justify-content:center;
+    font-size:12px;color:transparent;
+    transition:all .15s ease;
+  }
+  .visited-toggle.is-visited{
+    background:rgba(46,159,79,0.1);border-color:#2E9F4F;color:#1F7A3A;
+  }
+  .visited-toggle.is-visited .check{
+    background:#2E9F4F;border-color:#2E9F4F;color:var(--white);
   }
 
   .panel-section{padding:18px 22px;border-bottom:1px solid var(--line);}
@@ -257,12 +328,138 @@
   .save-status.show{opacity:1;}
   .last-updated{font-size:11px;color:var(--ink-soft);opacity:.75;margin-top:8px;}
 
+  /* ---------- Dashboard (Moje cíle) ---------- */
+  #dashboardOverlay{
+    position:fixed;inset:0;z-index:2000;
+    background:rgba(34,48,58,0.45);
+    display:flex;align-items:center;justify-content:center;
+    opacity:0;pointer-events:none;
+    transition:opacity .2s ease;
+  }
+  #dashboardOverlay.open{opacity:1;pointer-events:auto;}
+  #dashboard{
+    width:460px;max-width:92vw;
+    max-height:82vh;
+    background:var(--white);
+    border-radius:16px;
+    overflow:hidden;
+    display:flex;flex-direction:column;
+    transform:translateY(14px);
+    transition:transform .2s ease;
+    box-shadow:0 20px 50px rgba(0,0,0,0.25);
+  }
+  #dashboardOverlay.open #dashboard{transform:translateY(0);}
+  .dash-header{
+    padding:20px 22px 16px;
+    border-bottom:1px solid var(--line);
+    position:relative;
+  }
+  .dash-header h2{
+    font-family:'Fraunces',serif;font-size:20px;font-weight:600;
+    color:var(--river);margin:0 0 4px;padding-right:30px;
+  }
+  .dash-header .sub{font-size:12.5px;color:var(--ink-soft);}
+  .dash-close{
+    position:absolute;top:16px;right:16px;
+    width:28px;height:28px;border-radius:50%;
+    border:none;background:var(--paper);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;
+  }
+  .dash-progress{padding:16px 22px;border-bottom:1px solid var(--line);}
+  .dash-progress-bar{
+    width:100%;height:8px;border-radius:100px;background:var(--paper-dark);
+    overflow:hidden;margin-bottom:10px;
+  }
+  .dash-progress-fill{
+    height:100%;background:linear-gradient(90deg,#2E9F4F,var(--moss));
+    border-radius:100px;transition:width .3s ease;
+  }
+  .dash-cats{display:flex;flex-wrap:wrap;gap:6px;}
+  .dash-cat-pill{
+    font-size:11px;font-weight:600;color:var(--ink-soft);
+    padding:3px 9px;border-radius:100px;background:var(--paper);
+    display:flex;align-items:center;gap:5px;
+  }
+  .dash-cat-pill .dot{width:6px;height:6px;border-radius:50%;}
+  .dash-list{overflow-y:auto;flex:1;padding:8px 12px;}
+  .dash-item{
+    display:flex;align-items:center;gap:12px;
+    padding:11px 10px;border-radius:10px;cursor:pointer;
+    transition:background .12s ease;
+  }
+  .dash-item:hover{background:var(--paper);}
+  .dash-item .icon{
+    width:36px;height:36px;border-radius:50%;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;font-size:16px;
+    color:var(--white);
+  }
+  .dash-item .info{flex:1;min-width:0;}
+  .dash-item .info .n{font-size:13.5px;font-weight:600;color:var(--ink);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .dash-item .info .d{font-size:11px;color:var(--ink-soft);margin-top:1px;}
+  .dash-empty{
+    padding:40px 30px;text-align:center;color:var(--ink-soft);
+  }
+  .dash-empty svg{width:48px;height:48px;opacity:0.25;margin-bottom:12px;}
+  .dash-empty p{font-size:13px;line-height:1.5;}
+  .dash-footer{
+    padding:12px 22px;border-top:1px solid var(--line);
+    display:flex;justify-content:flex-end;
+  }
+  .dash-reset-btn{
+    font-family:'Inter',sans-serif;font-size:12px;font-weight:600;
+    color:var(--rust);background:none;border:none;cursor:pointer;
+    padding:6px 4px;
+  }
+  .dash-reset-btn:hover{text-decoration:underline;}
+
+  /* Trip planner bar */
+  #tripBar{
+    position:fixed;left:0;right:0;bottom:0;z-index:1500;
+    background:var(--white);border-top:1px solid var(--line);
+    box-shadow:0 -6px 20px rgba(0,0,0,0.1);
+    padding:12px 18px;
+    display:none;
+    align-items:center;gap:14px;
+    flex-wrap:wrap;
+  }
+  #tripBar.open{display:flex;}
+  .trip-bar-title{font-family:'Inter',sans-serif;font-size:12.5px;font-weight:700;color:var(--ink);white-space:nowrap;}
+  .trip-bar-sub{font-size:11px;color:var(--ink-soft);white-space:nowrap;}
+  .trip-stops{display:flex;gap:8px;flex-wrap:wrap;flex:1;min-width:200px;}
+  .trip-stop-chip{
+    display:flex;align-items:center;gap:6px;
+    background:var(--paper);border-radius:100px;padding:5px 6px 5px 12px;
+    font-size:12px;font-weight:600;color:var(--ink);
+  }
+  .trip-stop-chip .n{
+    width:18px;height:18px;border-radius:50%;background:var(--teal);color:var(--white);
+    display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;
+  }
+  .trip-stop-chip button{
+    width:18px;height:18px;border-radius:50%;border:none;background:var(--paper-dark);
+    cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;
+  }
+  .trip-bar-actions{display:flex;gap:8px;align-items:center;flex-shrink:0;}
+  .trip-btn{
+    font-family:'Inter',sans-serif;font-size:12px;font-weight:700;
+    padding:9px 14px;border-radius:9px;border:none;cursor:pointer;white-space:nowrap;
+  }
+  .trip-btn.primary{background:var(--teal);color:var(--white);}
+  .trip-btn.ghost{background:var(--paper);color:var(--ink-soft);}
+  @media (max-width:760px){
+    #tripBar{flex-direction:column;align-items:stretch;}
+    .trip-stops{order:2;}
+    .trip-bar-actions{order:3;justify-content:flex-end;}
+  }
+
   /* mobile */
   @media (max-width:760px){
     header{flex-wrap:wrap;padding:10px 12px;}
     .logo .name{display:none;}
     .filters{order:3;width:100%;margin-left:0;}
-    .search-wrap{order:2;max-width:none;flex:1 1 55%;}
+    .search-wrap{order:2;max-width:none;flex:1 1 40%;}
+    .my-places-btn{order:2;}
     #panel{
       position:absolute;right:0;bottom:0;top:auto;
       width:100%;height:78%;
@@ -271,6 +468,8 @@
       transform:translateY(100%);
     }
     #panel.open{transform:translateY(0);}
+    #dashboard{width:100%;max-width:100%;height:82vh;max-height:82vh;border-radius:16px 16px 0 0;align-self:flex-end;}
+    #dashboardOverlay{align-items:flex-end;}
   }
 </style>
 </head>
@@ -291,10 +490,27 @@
 
   <div class="filters" id="filters">
     <div class="chip active" data-cat="tourist"><span class="dot" style="background:var(--clay)"></span>Turistická místa</div>
+    <div class="chip active" data-cat="museum"><span class="dot" style="background:var(--plum)"></span>Muzea a galerie</div>
+    <div class="chip active" data-cat="architecture"><span class="dot" style="background:var(--gold)"></span>Architektura</div>
+    <div class="chip active" data-cat="sport"><span class="dot" style="background:var(--moss)"></span>Sport</div>
     <div class="chip active" data-cat="hotel"><span class="dot" style="background:var(--river-light)"></span>Hotely</div>
     <div class="chip active" data-cat="restaurant"><span class="dot" style="background:var(--rust)"></span>Restaurace</div>
-    <div class="chip active" data-cat="trip"><span class="dot" style="background:var(--moss)"></span>Výlety</div>
+    <div class="chip active" data-cat="trip"><span class="dot" style="background:var(--teal)"></span>Výlety</div>
+    <div class="extra-filters">
+      <div class="chip-extra" data-tag="rodiny">👨‍👩‍👧 Rodiny</div>
+      <div class="chip-extra" data-tag="bezbarierove">♿ Bezbariérové</div>
+    </div>
   </div>
+
+  <button class="my-places-btn" id="tripPlannerBtn" style="background:var(--teal);">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 20l-6-3V4l6 3 6-3 6 3v13l-6-3-6 3z"/><path d="M9 4v13M15 7v13"/></svg>
+    Plánovač trasy
+  </button>
+
+  <button class="my-places-btn" id="myPlacesBtn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Moje cíle <span class="count" id="myPlacesCount">0</span>
+  </button>
 </header>
 
 <div class="layout">
@@ -312,7 +528,13 @@
         <span class="cat-badge" id="pCatBadge"></span>
         <h2 id="pName"></h2>
         <p class="desc" id="pDesc"></p>
+        <div class="tag-pills" id="pTags"></div>
         <div class="coords" id="pCoords"></div>
+        <a class="more-info-link" id="pMoreInfo" href="#" target="_blank" rel="noopener">Zjistit více na pojizeriapolabi.cz ↗</a>
+        <button class="visited-toggle" id="visitedToggle">
+          <span class="check">✓</span>
+          <span id="visitedLabel">Označit jako navštívené</span>
+        </button>
       </div>
 
       <div class="panel-section">
@@ -337,62 +559,242 @@
   </div>
 </div>
 
+<div id="dashboardOverlay">
+  <div id="dashboard">
+    <div class="dash-header">
+      <button class="dash-close" id="dashClose">✕</button>
+      <h2>Moje cíle</h2>
+      <div class="sub" id="dashSub">Navštíveno 0 z 0 míst</div>
+    </div>
+    <div class="dash-progress">
+      <div class="dash-progress-bar"><div class="dash-progress-fill" id="dashProgressFill" style="width:0%"></div></div>
+      <div class="dash-cats" id="dashCats"></div>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <select id="dashSort" style="flex:1;font-family:'Inter',sans-serif;font-size:12px;padding:7px 9px;border-radius:8px;border:1.5px solid var(--line);background:var(--white);color:var(--ink);">
+          <option value="recent">Řadit: nejnovější</option>
+          <option value="name">Řadit: podle názvu</option>
+          <option value="cat">Řadit: podle kategorie</option>
+        </select>
+        <button id="dashExportBtn" style="font-family:'Inter',sans-serif;font-size:12px;font-weight:700;padding:7px 12px;border-radius:8px;border:none;background:var(--river);color:var(--white);cursor:pointer;white-space:nowrap;">📤 Export</button>
+      </div>
+    </div>
+    <div class="dash-list" id="dashList"></div>
+    <div class="dash-footer">
+      <button class="dash-reset-btn" id="dashResetBtn">Odznačit všechna navštívená místa</button>
+    </div>
+  </div>
+</div>
+
+<div id="tripBar">
+  <div>
+    <div class="trip-bar-title">🧭 Plánovač trasy</div>
+    <div class="trip-bar-sub" id="tripDistance">Klepejte na místa v mapě a přidejte je do trasy</div>
+  </div>
+  <div class="trip-stops" id="tripStopsList"></div>
+  <div class="trip-bar-actions">
+    <button class="trip-btn ghost" id="tripClearBtn">Vymazat</button>
+    <button class="trip-btn ghost" id="tripCloseBtn">Ukončit</button>
+    <button class="trip-btn primary" id="tripOpenMapsBtn">Otevřít v Google Maps ↗</button>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
 /* ---------------- Data ---------------- */
 const CATS = {
   tourist:{label:'Turistické místo', icon:'🏰'},
+  museum:{label:'Muzeum / galerie', icon:'🖼️'},
+  architecture:{label:'Architektura', icon:'⛪'},
+  sport:{label:'Sport', icon:'⚽'},
   hotel:{label:'Hotel / ubytování', icon:'🛏️'},
   restaurant:{label:'Restaurace', icon:'🍽️'},
   trip:{label:'Výlet', icon:'🥾'}
 };
 
 const PLACES = [
-  {id:'loucen', cat:'tourist', name:'Zámek Loučeň', lat:50.3011, lng:15.0122,
-    desc:'Empírový zámek proslulý bludištěm v anglickém parku a labyrintáriem, oblíbený cíl výletů s dětmi.'},
-  {id:'skoda-muzeum', cat:'tourist', name:'Škoda Muzeum', lat:50.4142, lng:14.9114,
-    desc:'Expozice mapující více než sto let historie automobilky Škoda v Mladé Boleslavi.'},
-  {id:'baba-dedek', cat:'tourist', name:'Sopky Baba a Dědek', lat:50.4302, lng:14.9328,
-    desc:'Čedičové vrcholy dvou vyhaslých sopek ukryté v lesích u Kosmonos, s výhledem do kraje.'},
-  {id:'bela-zamek', cat:'tourist', name:'Zámek Bělá pod Bezdězem', lat:50.5253, lng:14.7961,
-    desc:'Zámek s muzeem Podbezdězí a příležitostnými výstavami výtvarného umění.'},
+  // --- Hrady a zámky ---
+  {id:'mb-hrad', cat:'tourist', name:'Mladoboleslavský hrad', lat:50.40852, lng:14.90083,
+    desc:'Bývalé přemyslovské hradiště v centru Mladé Boleslavi, dnes využívané jako muzeum a výstavní prostory.'},
+  {id:'benatky-park', cat:'tourist', name:'Zámecký park Benátky nad Jizerou', lat:50.29093, lng:14.82259,
+    desc:'Rozlehlý zámecký park obklopující renesanční zámek přímo na řece Jizeře.'},
+  {id:'bon-repos', cat:'tourist', name:'Zámek Bon Repos', lat:50.24152, lng:14.79317,
+    desc:'Bývalý lovecký zámeček ukrytý v lesích u Lysé nad Labem, dnes oblíbený cíl procházek.'},
+  {id:'brandys-zamek', cat:'tourist', name:'Zámek Brandýs nad Labem', lat:50.18745, lng:14.66637,
+    desc:'Renesanční zámek s rozsáhlou zahradou nad řekou Labe, spjatý s pobyty Habsburků.'},
+  {id:'domousnice', cat:'tourist', name:'Zámek Domousnice', lat:50.39426, lng:15.10168,
+    desc:'Empírový zámek v obci Domousnice na Mladoboleslavsku.'},
+  {id:'kosmonosy-zamek', cat:'tourist', name:'Zámek Kosmonosy', lat:50.44023, lng:14.92653,
+    desc:'Barokní zámecký areál v Kosmonosích, těsně u Mladé Boleslavi.'},
+  {id:'krinec', cat:'tourist', name:'Zámek Křinec', lat:50.26900, lng:15.14009,
+    desc:'Barokní zámek s parkem v obci Křinec na Nymbursku.'},
+  {id:'loucen', cat:'tourist', name:'Zámek Loučeň', lat:50.28804, lng:15.02530,
+    desc:'Empírový zámek proslulý bludištěm a labyrintáriem v anglickém parku, oblíbený u rodin s dětmi.', tags:['rodiny']},
+  {id:'podebrady-zamek', cat:'tourist', name:'Zámek Poděbrady — Památník krále Jiřího', lat:50.14271, lng:15.11663,
+    desc:'Královský zámek v centru Poděbrad s expozicí věnovanou českému králi Jiřímu z Poděbrad.'},
+  {id:'stranov', cat:'tourist', name:'Zámek Stránov', lat:50.37305, lng:14.85414,
+    desc:'Zámek nedaleko Mladé Boleslavi obklopený přírodním parkem.'},
+  {id:'zviretice', cat:'tourist', name:'Zřícenina hradu a zámku Zvířetice', lat:50.46811, lng:14.91599,
+    desc:'Zřícenina hradu nad Bakovem nad Jizerou s výhledem do kraje, jeden z nejnavštěvovanějších cílů oblasti.'},
+  {id:'michalovice', cat:'tourist', name:'Zřícenina hradu Michalovice', lat:50.43605, lng:14.88848,
+    desc:'Zřícenina gotického hradu v lesích severně od Mladé Boleslavi.'},
+  // --- Rozhledny a vyhlídky ---
+  {id:'romanka', cat:'tourist', name:'Rozhledna Romanka', lat:50.25370, lng:15.08282,
+    desc:'Rozhledna v krajině mezi Nymburkem a Poděbrady s výhledem do kraje Polabí.'},
+  {id:'dobrovice-radnice', cat:'tourist', name:'Vyhlídková věž dobrovické radnice', lat:50.36943, lng:14.96212,
+    desc:'Věž radnice v Dobrovici zpřístupněná veřejnosti jako vyhlídka.'},
+  {id:'letecke-muzeum', cat:'tourist', name:'Vyhlídková věž Leteckého muzea Metoděje Vlacha', lat:50.40199, lng:14.89935,
+    desc:'Vyhlídková věž při leteckém muzeu v Mladé Boleslavi.'},
+  // --- Další turistické cíle ---
   {id:'botanicus', cat:'tourist', name:'Botanicus Ostrá', lat:50.1775, lng:14.8386,
-    desc:'Historická vesnice umění a řemesel s bylinnou zahradou u Lysé nad Labem, oblíbená s dětmi.'},
-  {id:'podebrady', cat:'tourist', name:'Lázně Poděbrady', lat:50.1424, lng:15.1194,
-    desc:'Lázeňské město s léčivými minerálními prameny, kolonádou a muzeem filmových legend.'},
-  {id:'nymburk-hradby', cat:'tourist', name:'Hradby Nymburka', lat:50.1866, lng:15.0418,
-    desc:'Dobře dochované středověké městské opevnění s vodními příkopy v centru Nymburka.'},
-  {id:'smetana', cat:'tourist', name:'Památník Bedřicha Smetany', lat:50.3269, lng:14.9494,
-    desc:'Bývalá jabkenická myslivna, kde skladatel pobýval a komponoval, dnes malé muzeum.'},
-  {id:'mirakulum', cat:'tourist', name:'Mirakulum a Tankodrom Milovice', lat:50.2144, lng:14.8814,
-    desc:'Rozlehlý zábavní park a bývalý vojenský tankodrom — celodenní program pro rodiny.'},
+    desc:'Historická vesnice řemesel s bylinnou zahradou u Lysé nad Labem, oblíbená u rodin s dětmi.', tags:['rodiny']},
+  {id:'mirakulum', cat:'tourist', name:'Mirakulum Milovice', lat:50.2144, lng:14.8814,
+    desc:'Rozlehlý zábavní park s atrakcemi pro celou rodinu v bývalém vojenském prostoru Milovice.', tags:['rodiny']},
+  {id:'lazne-podebrady-info', cat:'tourist', name:'Lázně Poděbrady', lat:50.1424, lng:15.1194,
+    desc:'Lázeňské město s léčivými minerálními prameny a kolonádou v srdci lázeňského parku.'},
+  {id:'probostska-jezera', cat:'tourist', name:'Proboštská jezera', lat:50.19500, lng:14.68500,
+    desc:'Oblíbené místo rybaření i přírodního koupání v těsné blízkosti Staré Boleslavi.'},
+  {id:'zamecky-park-lysa', cat:'tourist', name:'Zámecký park Lysá nad Labem', lat:50.20190, lng:14.83390,
+    desc:'Zámecký park tvořený francouzským libosadem a anglickým parkem, zdobený sochařskou výzdobou z dílen M. B. Brauna, v jedinečném panoramatu se zámkem a kostelem sv. Jana Křtitele.'},
+  {id:'hradby-nymburk', cat:'tourist', name:'Středověké hradby Nymburk', lat:50.18611, lng:15.04167,
+    desc:'Jeden z nejkvalitnějších příkladů středověkého městského opevnění v Čechách, budovaný od konce 13. století za vlády Václava II., s dochovanými věžemi a částí vodních příkopů.'},
 
-  {id:'penzion-polabi', cat:'hotel', name:'Penzion Polabí', lat:50.1520, lng:14.6520,
-    desc:'Rodinný penzion s restaurací, saunou a sportovním zázemím jen kousek od Prahy.'},
-  {id:'hotel-podebrady', cat:'hotel', name:'Lázeňský hotel Poděbrady', lat:50.1435, lng:15.1177,
-    desc:'Ubytování s wellness přímo v centru lázeňského parku v Poděbradech.'},
-  {id:'hotel-mb', cat:'hotel', name:'Hotel Mladá Boleslav', lat:50.4114, lng:14.9048,
-    desc:'Ubytování v centru města, výchozí bod pro návštěvu Škoda Muzea i okolních sopek.'},
+  // --- Muzea a galerie ---
+  {id:'skoda-muzeum', cat:'museum', name:'Škoda Muzeum', lat:50.4142, lng:14.9114,
+    desc:'Expozice přibližující více než stoletou historii automobilky Škoda v Mladé Boleslavi.'},
+  {id:'galerie-pod-vezi', cat:'museum', name:'Galerie Pod Věží', lat:50.4118, lng:14.9036,
+    desc:'Galerie a vyhlídková věž v budově staré radnice na Staroměstském náměstí v Mladé Boleslavi.'},
+  {id:'letecke-muzeum-vlacha', cat:'museum', name:'Letecké muzeum Metoděje Vlacha', lat:50.40199, lng:14.89935,
+    desc:'Muzeum letectví v Mladé Boleslavi spojené s vyhlídkovou věží.'},
+  {id:'muzeum-mladoboleslavska', cat:'museum', name:'Muzeum Mladoboleslavska', lat:50.41200, lng:14.90420,
+    desc:'Muzeum navazující na tradici Krajského muzejního spolku založeného v roce 1887, mapující historii Mladoboleslavska.'},
+  {id:'dobrovicka-muzea', cat:'museum', name:'Dobrovická muzea', lat:50.36750, lng:14.96350,
+    desc:'Muzejní areál v bývalém hospodářském dvoře v Dobrovici, zapsaném v seznamu nemovitých kulturních památek, součástí je i zámek.'},
+  {id:'film-legends-podebrady', cat:'museum', name:'Film Legends Museum Poděbrady', lat:50.14100, lng:15.11900,
+    desc:'Sběratelská expozice soch, figurín a replik nejslavnějších filmových a komiksových hrdinů, součást sbírky Johnnyho Wolfa.'},
+  {id:'muzeum-celakovice', cat:'museum', name:'Městské muzeum v Čelákovicích', lat:50.16056, lng:14.75000,
+    desc:'Muzeum založené roku 1903, sídlící v čelákovické tvrzi, s přírodovědnými, archeologickými a historickými sbírkami středního Polabí.'},
+  {id:'kolejiste-nymburk', cat:'museum', name:'Modelové kolejiště Nymburk', lat:50.18611, lng:15.04167,
+    desc:'Rozsáhlé modelové kolejiště v Nymburce s několika nádražími, desítkami výhybek a stovkami metrů kolejí.', tags:['rodiny']},
+  {id:'muzeum-vojensky-prostor-milovice', cat:'museum', name:'Muzeum vojenského prostoru Milovice', lat:50.21440, lng:14.88500,
+    desc:'Expozice vojenské techniky, uniforem a fotografií přibližující historii bývalého Vojenského újezdu Mladá od roku 1904 do roku 1991.'},
+  {id:'museum-of-bricks-podebrady', cat:'museum', name:'Museum of Bricks Poděbrady', lat:50.14100, lng:15.11900,
+    desc:'Přes tisíc modelů postavených z kostiček LEGO, včetně replik místních staveb jako Jiřího náměstí v Poděbradech.', tags:['rodiny']},
+  {id:'polabske-muzeum-podebrady', cat:'museum', name:'Polabské muzeum Poděbrady', lat:50.14250, lng:15.11800,
+    desc:'Muzeum sídlící od roku 1906 v budově nejstarší poděbradské školy, s expozicí Příběh Polabí mapující dějiny regionu od druhohor po 20. století.'},
 
+  // --- Architektura ---
+  {id:'cukrovar-dobrovice', cat:'architecture', name:'Cukrovar a Lihovar Dobrovice', lat:50.36700, lng:14.96500,
+    desc:'Průmyslový areál v Dobrovici, kde se cukr nepřetržitě vyrábí už od roku 1831 — symbol dlouhé cukrovarnické tradice regionu.'},
+  {id:'kostel-sv-havla-mb', cat:'architecture', name:'Kostel sv. Havla, Mladá Boleslav', lat:50.41200, lng:14.90200,
+    desc:'Kostel s přilehlou Hejdovou zahradou nabízející vyhlídku na Staré Město, díky výborné akustice hostí i koncerty.'},
+  {id:'beniesova-vila', cat:'architecture', name:'Beniesova vila', lat:50.20910, lng:14.84274,
+    desc:'Secesní vila v okolí Lysé nad Labem, ukázka meziválečné rezidenční architektury v regionu.'},
+  {id:'fara-dolni-krupa', cat:'architecture', name:'Fara Dolní Krupá', lat:50.54590, lng:14.86792,
+    desc:'Historická fara v obci Dolní Krupá na severu oblasti, spjatá s místní farní správou v podhůří Bezdězu.'},
+  {id:'nadrazi-podebrady', cat:'architecture', name:'Funkcionalistické nádraží Poděbrady', lat:50.14938, lng:15.12348,
+    desc:'Nádražní budova v Poděbradech ve funkcionalistickém stylu, ukázka meziválečné moderní architektury lázeňského města.'},
+  {id:'hydroelektrarna-podebrady', cat:'architecture', name:'Hydroelektrárna Poděbrady', lat:50.14132, lng:15.12216,
+    desc:'Historická vodní elektrárna využívající tok Labe v Poděbradech, dodnes součást energetické infrastruktury města.'},
+  {id:'kaplicka-bozi-voda', cat:'architecture', name:'Kaplička Boží Voda', lat:50.39645, lng:14.95933,
+    desc:'Drobná poutní kaplička u pramene v krajině poblíž Mladé Boleslavi, tradiční zastavení na procházkách okolím.'},
+  {id:'kostel-stara-boleslav', cat:'architecture', name:'Kostel Nanebevzetí Panny Marie ve Staré Boleslavi', lat:50.19606, lng:14.67662,
+    desc:'Jedno z nejvýznamnějších mariánských poutních míst v Čechách, spjaté s uctíváním Palladia země české a s odkazem knížete Václava.'},
+  {id:'kostel-mb', cat:'architecture', name:'Kostel Nanebevzetí Panny Marie, Mladá Boleslav', lat:50.41185, lng:14.90362,
+    desc:'Barokní farní kostel na Staroměstském náměstí, jedna z dominant historického centra Mladé Boleslavi.'},
+
+  // --- Sport ---
+  {id:'aeroklub-mb', cat:'sport', name:'Aeroklub Mladá Boleslav', lat:50.40152, lng:14.89886,
+    desc:'Letiště na okraji Mladé Boleslavi s aeroklubem nabízejícím vyhlídkové lety, výcvik pilotů i parašutismus.'},
+  {id:'golf-benatky', cat:'sport', name:'Golf Club Benátky nad Jizerou', lat:50.27107, lng:14.87434,
+    desc:'Golfové hřiště v malebné krajině u Benátek nad Jizerou, v dosahu zámeckého parku na řece Jizeře.'},
+  {id:'golf-podebrady', cat:'sport', name:'Golf Club Poděbrady', lat:50.13813, lng:15.14441,
+    desc:'Golfové hřiště v lázeňském městě Poděbrady, oblíbené u návštěvníků kombinujících golf s lázeňským pobytem.'},
+  {id:'golf-mb', cat:'sport', name:'Golf Mladá Boleslav', lat:50.43621, lng:14.88175,
+    desc:'Golfové hřiště na okraji Mladé Boleslavi s odpalištěm i cvičnými plochami pro hráče všech úrovní.'},
+  {id:'golf-galatea', cat:'sport', name:'Golfové odpaliště — Hotel Galatea', lat:50.44416, lng:14.92271,
+    desc:'Golfové odpaliště při hotelu Galatea u Mladé Boleslavi, vhodné i pro začátečníky.'},
+  {id:'inline-mb', cat:'sport', name:'In-line dráha — Městský stadion Mladá Boleslav', lat:50.42688, lng:14.91588,
+    desc:'Veřejná in-line dráha při městském stadionu v Mladé Boleslavi, oblíbená k bruslení i běhu.'},
+  {id:'jezdecky-areal-ptyrov', cat:'sport', name:'Jezdecký areál Farma Ptýrov', lat:50.50816, lng:14.94627,
+    desc:'Jezdecký areál u Farmy Ptýrov v Českém ráji nabízející vyjížďky na koních a jezdecké kurzy.'},
+  {id:'jizdarna-zak', cat:'sport', name:'Jízdárna Žák', lat:50.54226, lng:14.92551,
+    desc:'Jezdecká škola a jízdárna na severu oblasti.'},
+  {id:'beach-kosmonosy', cat:'sport', name:'Beach Kosmonosy', lat:50.43659, lng:14.92332,
+    desc:'Areál s hřišti pro plážový volejbal v Kosmonosích u Mladé Boleslavi, oblíbené místo letního sportovního vyžití.'},
+  {id:'lukostrelba-libichov', cat:'sport', name:'Lukostřelba Libichov', lat:50.38000, lng:14.87000,
+    desc:'Lukostřelnice nedaleko Mladé Boleslavi, ideální místo pro zájemce o sportovní lukostřelbu.'},
+  {id:'koupaliste-mb', cat:'sport', name:'Městské koupaliště Mladá Boleslav', lat:50.41500, lng:14.90600,
+    desc:'Koupaliště nabízející vyžití pro všechny věkové skupiny, jak ve vodě, tak na souši.', tags:['rodiny']},
+  {id:'volnocasovy-areal-bakov', cat:'sport', name:'Volnočasový areál Bakov nad Jizerou', lat:50.46600, lng:14.92800,
+    desc:'Areál otevřený v roce 2010, zahrnující koupaliště a další sportovní a rekreační vyžití v Bakově nad Jizerou.', tags:['rodiny']},
+
+  // --- Hotely a ubytování ---
+  {id:'relax-vrchbela', cat:'hotel', name:'Hotel RELAX Vrchbělá', lat:50.5200, lng:14.7500,
+    desc:'Hotel ve sportovním areálu Vrchbělá nedaleko hradu Bezděz, s malou farmou a půjčovnou kol pro hosty.'},
+  {id:'na-statku', cat:'hotel', name:'Hotel Na Statku', lat:50.4550, lng:14.9750,
+    desc:'Hotel v bývalém valdštejnském statku v obci Nepřevázka, s tenisovými kurty, bowlingem a vlastní restaurací.'},
+  {id:'houstka', cat:'hotel', name:'Hotel Club Houštka', lat:50.1900, lng:14.6650,
+    desc:'Hotel v lesoparku Houštka u Staré Boleslavi, v sousedství tenisového areálu.'},
+  {id:'felicitas', cat:'hotel', name:'Spa Hotel Felicitas', lat:50.1424, lng:15.1194,
+    desc:'Čtyřhvězdičkový lázeňský hotel přímo u kolonády v Poděbradech, s vlastním wellness centrem a restaurací Fine Café.'},
+  {id:'lazne-podebrady', cat:'hotel', name:'Lázně Poděbrady — hotely', lat:50.1420, lng:15.1170,
+    desc:'Léčebné lázně v centru Poděbrad se sítí vlastních hotelů (Libuše, Chariclea a další) a wellness procedurami.'},
+  {id:'famoz-club', cat:'hotel', name:'Famoz club Zvířetice', lat:50.4670, lng:14.9160,
+    desc:'Originálně vyzdobený hotel s restaurací pod zříceninou hradu Zvířetice, s vlastní vyhlídkou nad krajem.'},
+  {id:'solid-spa', cat:'hotel', name:'Penzion Solid Spa', lat:50.4050, lng:14.9000,
+    desc:'Penzion u Mladé Boleslavi s klimatizovanými pokoji, zahradou a bezplatným Wi-Fi, dříve známý jako Penzion Sportrelax.'},
+  {id:'bucicky-mlyn', cat:'hotel', name:'Bučický mlýn', lat:50.2900, lng:15.1500,
+    desc:'Romantický penzion a restaurace v areálu rožďalovického mlýna na hrázi Bučického rybníka, asi 22 km od Nymburka.'},
+  {id:'penzion-duo', cat:'hotel', name:'Penzion Duo', lat:50.4380, lng:14.9280,
+    desc:'Penzion v Kosmonosech u Mladé Boleslavi, vhodný pro služební cesty i rekreaci, nedaleko barokní Lorety.'},
+  {id:'penzion-krajni-mez', cat:'hotel', name:'Penzion Krajní mez', lat:50.4230, lng:14.9200,
+    desc:'Penzion v okrajové čtvrti Mladé Boleslavi u přírodní památky Radouč, s nekuřáckou restaurací.'},
+  {id:'penzion-lesni', cat:'hotel', name:'Penzion Lesní', lat:50.2144, lng:14.8850,
+    desc:'Ubytování v blízkosti lesa na dosah centra Milovic, s pokoji pro 2–6 osob a možností zážitkových balíčků.', tags:['rodiny']},
+  {id:'hrncirsky-dvur', cat:'hotel', name:'Hrnčířský dvůr Zvířetice', lat:50.4720, lng:14.9200,
+    desc:'Usedlost s tradiční hrnčířskou výrobou u Bakova nad Jizerou, nabízející ubytování penzionového typu pro pěší i cykloturisty.'},
+  {id:'design-pension-twenty', cat:'hotel', name:'Design Pension Twenty', lat:50.1424, lng:15.1194,
+    desc:'Apartmány v historickém měšťanském domě s moderním interiérem a výhledem na zámek Poděbrady, s kavárnou v přízemí.'},
+
+  // --- Restaurace ---
+  {id:'na-jitrach', cat:'restaurant', name:'Restaurace Na Jitrách', lat:50.1700, lng:14.8550,
+    desc:'Restaurace u obce Semice s velkou terasou a menu inspirovaným venkovskou francouzskou kuchyní.'},
+  {id:'stepanka', cat:'restaurant', name:'Restaurace Štěpánka', lat:50.4100, lng:14.9050,
+    desc:'Restaurace s výhledem na lesopark Štěpánku v Mladé Boleslavi, kde obsluhu tvoří lidé se zdravotním postižením.'},
+  {id:'graal', cat:'restaurant', name:'Restaurace Graal ve skále', lat:50.4144, lng:14.9096,
+    desc:'Restaurace vytesaná přímo do skály pod mladoboleslavským Templem, s bazénem živých pstruhů.'},
+  {id:'ptyrov', cat:'restaurant', name:'Restaurace Farma Ptýrov', lat:50.5230, lng:15.0170,
+    desc:'Restaurace na farmě v obci Ptýrov v Českém ráji, se sezonní kuchyní z místních surovin.'},
+  {id:'vosverk', cat:'restaurant', name:'Penzion a restaurace Na Vošverku', lat:50.1450, lng:14.7350,
+    desc:'Rodinná restaurace s dětským hřištěm a zahradou u Čelákovic.', tags:['rodiny']},
   {id:'hajenka', cat:'restaurant', name:'Hájenka', lat:50.1219, lng:14.8408,
-    desc:'Legendární hostinec v Kersku, kam si pravidelně chodil sednout spisovatel Bohumil Hrabal.'},
-  {id:'vsetaty-nadrazi', cat:'restaurant', name:'Restaurace na nádraží Všetaty', lat:50.3069, lng:14.5406,
-    desc:'Oblíbená zastávka na občerstvení na konci polabských pěších výletů.'},
-  {id:'kosik', cat:'restaurant', name:'Farma Košík', lat:50.5460, lng:14.8890,
-    desc:'Farmářská kuchyně v malé obci u severní hranice středních Čech.'},
+    desc:'Hostinec v Kersku proslulý tím, že sem pravidelně chodíval spisovatel Bohumil Hrabal.'},
+  {id:'o-mase', cat:'restaurant', name:'O MASE', lat:50.1424, lng:15.1194,
+    desc:'Poděbradská restaurace zaměřená na maso a kvalitní suroviny, s výhledem do lázeňského parku.'},
+  {id:'pizzeria-diverso', cat:'restaurant', name:'Pizzeria Diverso', lat:50.4114, lng:14.9048,
+    desc:'Italská restaurace v Mladé Boleslavi s přípravou pizzy v originální kamenné peci na dřevo a širokým výběrem těstovin a salátů.'},
+  {id:'u-janka', cat:'restaurant', name:'Restaurace U Janka', lat:50.4090, lng:14.9070,
+    desc:'Stylová restaurace s poctivým domácím jídlem a pivnicí, doplněná klidnou zahrádkou k posezení i grilování.'},
 
-  {id:'benatecka-divocina', cat:'trip', name:'Benátecká divočina', lat:50.2900, lng:14.8250,
-    desc:'Náročnější cyklotrasa vedoucí k labyrintáriu zámku Loučeň i k bývalému tankodromu.'},
-  {id:'greenway-jizera', cat:'trip', name:'Greenway Jizera', lat:50.3550, lng:14.9750,
-    desc:'Cyklostezka podél řeky Jizery, která spojuje Český ráj s krajinou Polabí.'},
-  {id:'labska-stezka', cat:'trip', name:'Labská stezka', lat:50.1800, lng:14.9000,
-    desc:'Nenáročná cyklotrasa podél toku Labe, vhodná i pro rodiny s malými dětmi.'},
-  {id:'hrabalova-stezka', cat:'trip', name:'Naučná stezka Bohumila Hrabala', lat:50.1263, lng:14.8371,
-    desc:'Trasa přírodou Polabí kolem spisovatelovy chaty a legendárních míst z jeho děl.'},
-  {id:'svatojirsky-les', cat:'trip', name:'Svatojiřský les', lat:50.3150, lng:14.9700,
-    desc:'Procházkové trasy lesem na rozhraní Nymburska a Mladoboleslavska, oblíbené místo B. Smetany.'},
-  {id:'kokorinsko-vyhlidky', cat:'trip', name:'Polabské vyhlídky', lat:50.3600, lng:14.6500,
-    desc:'Nenáročná trasa s výhledy na Kokořínsko, Prahu i Polabskou rovinu, cca 15 km.'}
+  // --- Výlety ---
+  {id:'cyklo-rudolf', cat:'trip', name:'Cyklostezka císaře Rudolfa II.', lat:50.18749, lng:14.66637,
+    desc:'Okružní naučná trasa se 17 zastaveními, která propojuje zámecké zahrady Brandýsa nad Labem, Lysé nad Labem a Benátek nad Jizerou.', tags:['rodiny']},
+  {id:'cyklo-podebrady-sadska', cat:'trip', name:'Z Poděbrad přes Sadskou do Nymburka a zpět podél Labe', lat:50.14957, lng:15.12369,
+    desc:'Nenáročný rodinný okruh spojující lázeňský park Poděbrad, koupací jezero v Sadské a nábřeží Nymburka.', tags:['rodiny']},
+  {id:'cyklo-mb-vychod', cat:'trip', name:'Za malebnými obcemi východně od Mladé Boleslavi', lat:50.40746, lng:14.88693,
+    desc:'Cyklo okruh vesnicemi v bezprostředním okolí Mladé Boleslavi.'},
+  {id:'cyklo-lhota', cat:'trip', name:'Ze Staré Boleslavi kolem jezera Lhota', lat:50.19931, lng:14.67631,
+    desc:'Trasa od Staré Boleslavi k jezeru Lhota přes obce Hlavenec a Otradovice.'},
+  {id:'bezbarierovy-zviretice', cat:'trip', name:'Bezbariérový výlet kolem Zvířetic', lat:50.47513, lng:14.90932,
+    desc:'Nenáročná bezbariérová trasa v okolí zříceniny hradu Zvířetice.', tags:['bezbarierove']},
+  {id:'stezka-prihrazske', cat:'trip', name:'Dětská naučná stezka Příhrazskými skalami', lat:50.51068, lng:15.02636,
+    desc:'Naučná stezka pro rodiny s dětmi v oblasti Příhrazských skal na okraji Českého ráje.', tags:['rodiny']},
+  {id:'stezka-veverky', cat:'trip', name:'Dětská naučná stezka za veverkami', lat:50.40676, lng:14.91577,
+    desc:'Krátká naučná stezka pro nejmenší návštěvníky u Mladé Boleslavi.', tags:['rodiny']},
+  {id:'hrabalova-stezka', cat:'trip', name:'Za Bohumilem Hrabalem do Kerska', lat:50.1263, lng:14.8371,
+    desc:'Procházka přírodou u Kerska kolem míst spjatých se spisovatelem Bohumilem Hrabalem.'},
+  {id:'zlata-stezka', cat:'trip', name:'Zlatá stezka Českým rájem (start Mladá Boleslav)', lat:50.4133, lng:14.9033,
+    desc:'Značená stezka spojující nejvýznamnější místa Českého ráje, začínající v Mladé Boleslavi, v celkové délce přes 100 km.'}
 ];
 
 /* ---------------- Map setup ---------------- */
@@ -405,51 +807,88 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 const markers = {};
 let activeCats = new Set(Object.keys(CATS));
+let activeTagFilters = new Set();
 let currentPlace = null;
 let currentPhotos = [];
+let visitedMap = {}; // id -> visitedAt timestamp
+let planningMode = false;
+let tripStops = []; // array of place ids in order
 
-function makeIcon(place, hasNote){
+function makeIcon(place, visited){
   return L.divIcon({
     className:'',
-    html:`<div class="pin ${place.cat}${hasNote?' has-note':''}"><span>${CATS[place.cat].icon}</span></div>`,
+    html:`<div class="pin ${place.cat}${visited?' visited':''}"><span>${CATS[place.cat].icon}</span></div>`,
     iconSize:[30,30],
     iconAnchor:[15,28],
     popupAnchor:[0,-26]
   });
 }
 
-async function hasSavedNote(id){
+async function loadVisitedIndex(){
   try{
-    const r = await window.storage.get('place:'+id, false);
-    if(!r) return false;
-    const data = JSON.parse(r.value);
-    return !!(data.note || (data.photos && data.photos.length));
-  }catch(e){ return false; }
+    const r = await window.storage.get('visited-index', false);
+    if(r){
+      const arr = JSON.parse(r.value);
+      visitedMap = {};
+      arr.forEach(entry => { visitedMap[entry.id] = entry.visitedAt; });
+    }
+  }catch(e){ visitedMap = {}; }
 }
 
-async function buildMarkers(){
+async function saveVisitedIndex(){
+  const arr = Object.keys(visitedMap).map(id => ({id, visitedAt: visitedMap[id]}));
+  try{
+    await window.storage.set('visited-index', JSON.stringify(arr), false);
+  }catch(e){ /* best effort */ }
+}
+
+function buildMarkers(){
   for(const place of PLACES){
-    const noted = await hasSavedNote(place.id);
-    const m = L.marker([place.lat, place.lng], {icon: makeIcon(place, noted)});
-    m.on('click', ()=>openPlace(place));
-    markers[place.id] = {marker:m, place, noted};
+    const visited = !!visitedMap[place.id];
+    const m = L.marker([place.lat, place.lng], {icon: makeIcon(place, visited)});
+    m.on('click', ()=>{
+      if(planningMode){ toggleTripStop(place.id); }
+      else { openPlace(place); }
+    });
+    markers[place.id] = {marker:m, place};
     m.addTo(map);
   }
 }
-buildMarkers();
+
+async function initApp(){
+  await loadVisitedIndex();
+  buildMarkers();
+  updateMyPlacesCount();
+}
+initApp();
+
+function updateMyPlacesCount(){
+  document.getElementById('myPlacesCount').textContent = Object.keys(visitedMap).length;
+}
 
 function applyFilters(){
   const q = document.getElementById('searchInput').value.trim().toLowerCase();
   Object.values(markers).forEach(({marker, place})=>{
     const catOk = activeCats.has(place.cat);
     const searchOk = !q || place.name.toLowerCase().includes(q);
-    if(catOk && searchOk){
+    const tagOk = activeTagFilters.size === 0 ||
+      [...activeTagFilters].every(t => place.tags && place.tags.includes(t));
+    if(catOk && searchOk && tagOk){
       if(!map.hasLayer(marker)) marker.addTo(map);
     } else {
       if(map.hasLayer(marker)) map.removeLayer(marker);
     }
   });
 }
+
+document.querySelectorAll('.chip-extra').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    const tag = chip.dataset.tag;
+    if(activeTagFilters.has(tag)){ activeTagFilters.delete(tag); chip.classList.remove('active'); }
+    else { activeTagFilters.add(tag); chip.classList.add('active'); }
+    applyFilters();
+  });
+});
 
 document.querySelectorAll('.chip').forEach(chip=>{
   chip.addEventListener('click', ()=>{
@@ -478,6 +917,14 @@ async function openPlace(place){
   document.getElementById('pDesc').textContent = place.desc;
   document.getElementById('pCoords').textContent = `${place.lat.toFixed(4)}, ${place.lng.toFixed(4)}`;
 
+  const tagLabels = {rodiny:'👨‍👩‍👧 Rodiny s dětmi', bezbarierove:'♿ Bezbariérové'};
+  const tagsEl = document.getElementById('pTags');
+  tagsEl.innerHTML = (place.tags||[]).map(t=>`<span class="tag-pill">${tagLabels[t]||t}</span>`).join('');
+
+  document.getElementById('pMoreInfo').href =
+    'https://www.google.com/search?q=' + encodeURIComponent(place.name + ' site:pojizeriapolabi.cz');
+
+  updateVisitedToggleUI(place);
   document.getElementById('noteInput').value = '';
   document.getElementById('lastUpdated').textContent = '';
   currentPhotos = [];
@@ -544,13 +991,328 @@ document.getElementById('saveBtn').addEventListener('click', async ()=>{
     status.classList.add('show');
     setTimeout(()=>status.classList.remove('show'), 1800);
     document.getElementById('lastUpdated').textContent = 'Naposledy upraveno právě teď';
-
-    const entry = markers[currentPlace.id];
-    entry.noted = true;
-    entry.marker.setIcon(makeIcon(currentPlace, true));
   }catch(err){
     alert('Záznam se nepodařilo uložit. Zkuste to prosím znovu.');
   }
+});
+
+/* ---------------- Navštívená místa (uživatelská sekce) ---------------- */
+function updateVisitedToggleUI(place){
+  const btn = document.getElementById('visitedToggle');
+  const label = document.getElementById('visitedLabel');
+  const isVisited = !!visitedMap[place.id];
+  btn.classList.toggle('is-visited', isVisited);
+  if(isVisited){
+    const d = new Date(visitedMap[place.id]);
+    label.textContent = 'Navštíveno ' + d.toLocaleDateString('cs-CZ');
+  } else {
+    label.textContent = 'Označit jako navštívené';
+  }
+}
+
+document.getElementById('visitedToggle').addEventListener('click', async ()=>{
+  if(!currentPlace) return;
+  const id = currentPlace.id;
+  if(visitedMap[id]){
+    delete visitedMap[id];
+  } else {
+    visitedMap[id] = Date.now();
+  }
+  await saveVisitedIndex();
+  updateVisitedToggleUI(currentPlace);
+  updateMyPlacesCount();
+  const entry = markers[id];
+  if(entry) entry.marker.setIcon(makeIcon(currentPlace, !!visitedMap[id]));
+});
+
+/* ---------------- Dashboard "Moje cíle" ---------------- */
+const dashboardOverlay = document.getElementById('dashboardOverlay');
+let dashSortMode = 'recent';
+
+function renderDashboard(){
+  const total = PLACES.length;
+  const visitedIds = Object.keys(visitedMap);
+  const visitedCount = visitedIds.length;
+
+  document.getElementById('dashSub').textContent = `Navštíveno ${visitedCount} z ${total} míst`;
+  document.getElementById('dashProgressFill').style.width = (total ? (visitedCount/total*100) : 0) + '%';
+  document.getElementById('dashResetBtn').style.display = visitedCount === 0 ? 'none' : 'block';
+
+  // per-category breakdown
+  const catTotals = {};
+  const catVisited = {};
+  PLACES.forEach(p=>{
+    catTotals[p.cat] = (catTotals[p.cat]||0)+1;
+    if(visitedMap[p.id]) catVisited[p.cat] = (catVisited[p.cat]||0)+1;
+  });
+  const catsEl = document.getElementById('dashCats');
+  catsEl.innerHTML = '';
+  Object.keys(CATS).forEach(cat=>{
+    const pill = document.createElement('div');
+    pill.className = 'dash-cat-pill';
+    pill.innerHTML = `<span class="dot" style="background:${getPinColor(cat)}"></span>${CATS[cat].icon} ${catVisited[cat]||0}/${catTotals[cat]||0}`;
+    catsEl.appendChild(pill);
+  });
+
+  // list
+  const listEl = document.getElementById('dashList');
+  listEl.innerHTML = '';
+  if(visitedCount === 0){
+    listEl.innerHTML = `<div class="dash-empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <p>Zatím nemáte označená žádná navštívená místa. Klepněte na místo v mapě a označte ho jako navštívené.</p>
+    </div>`;
+    return;
+  }
+  const sorted = visitedIds
+    .map(id => ({ place: PLACES.find(p=>p.id===id), visitedAt: visitedMap[id] }))
+    .filter(x => x.place)
+    .sort((a,b)=>{
+      if(dashSortMode === 'name') return a.place.name.localeCompare(b.place.name, 'cs');
+      if(dashSortMode === 'cat') return a.place.cat.localeCompare(b.place.cat) || a.place.name.localeCompare(b.place.name, 'cs');
+      return b.visitedAt - a.visitedAt;
+    });
+
+  sorted.forEach(({place, visitedAt})=>{
+    const item = document.createElement('div');
+    item.className = 'dash-item';
+    const d = new Date(visitedAt);
+    item.innerHTML = `
+      <div class="icon pin-color-${place.cat}">${CATS[place.cat].icon}</div>
+      <div class="info">
+        <div class="n">${place.name}</div>
+        <div class="d">${CATS[place.cat].label} · navštíveno ${d.toLocaleDateString('cs-CZ')}</div>
+      </div>`;
+    item.querySelector('.icon').style.background = getPinColor(place.cat);
+    item.addEventListener('click', ()=>{
+      closeDashboard();
+      openPlace(place);
+      panel.classList.add('open');
+    });
+    listEl.appendChild(item);
+  });
+}
+
+function getPinColor(cat){
+  const map = {
+    tourist:'#B5651D', museum:'#8B4F9E', architecture:'#B8901F',
+    sport:'#279547', hotel:'#4F46A3', restaurant:'#A2402B', trip:'#1E7A72'
+  };
+  return map[cat] || '#999';
+}
+
+function openDashboard(){
+  renderDashboard();
+  dashboardOverlay.classList.add('open');
+}
+function closeDashboard(){
+  dashboardOverlay.classList.remove('open');
+}
+
+document.getElementById('myPlacesBtn').addEventListener('click', openDashboard);
+document.getElementById('dashClose').addEventListener('click', closeDashboard);
+dashboardOverlay.addEventListener('click', (e)=>{
+  if(e.target === dashboardOverlay) closeDashboard();
+});
+
+document.getElementById('dashResetBtn').addEventListener('click', async ()=>{
+  const count = Object.keys(visitedMap).length;
+  if(count === 0) return;
+  const ok = confirm(`Opravdu chcete odznačit všech ${count} navštívených míst? Vaše fotky a poznámky u jednotlivých míst zůstanou zachované, smaže se jen příznak návštěvy.`);
+  if(!ok) return;
+
+  const idsToClear = Object.keys(visitedMap);
+  visitedMap = {};
+  await saveVisitedIndex();
+
+  idsToClear.forEach(id=>{
+    const entry = markers[id];
+    if(entry) entry.marker.setIcon(makeIcon(entry.place, false));
+  });
+
+  updateMyPlacesCount();
+  renderDashboard();
+  if(currentPlace) updateVisitedToggleUI(currentPlace);
+});
+
+document.getElementById('dashSort').addEventListener('change', (e)=>{
+  dashSortMode = e.target.value;
+  renderDashboard();
+});
+
+/* ---------------- Export "Moje cíle" jako obrázek ---------------- */
+document.getElementById('dashExportBtn').addEventListener('click', ()=>{
+  const visitedIds = Object.keys(visitedMap);
+  const items = visitedIds
+    .map(id => ({ place: PLACES.find(p=>p.id===id), visitedAt: visitedMap[id] }))
+    .filter(x => x.place)
+    .sort((a,b)=> b.visitedAt - a.visitedAt);
+
+  const W = 800;
+  const rowH = 46;
+  const headerH = 150;
+  const footerH = 50;
+  const H = headerH + Math.max(items.length,1) * rowH + footerH;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  // background
+  ctx.fillStyle = '#FBF9F3';
+  ctx.fillRect(0,0,W,H);
+
+  // header band
+  const grad = ctx.createLinearGradient(0,0,W,0);
+  grad.addColorStop(0,'#322B7F');
+  grad.addColorStop(1,'#279547');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,W,headerH);
+
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '700 30px Georgia, serif';
+  ctx.fillText('Moje cíle — Pojizeří & Polabí', 32, 62);
+  ctx.font = '400 16px Arial';
+  ctx.fillText(`Navštíveno ${items.length} z ${PLACES.length} míst · export ${new Date().toLocaleDateString('cs-CZ')}`, 32, 92);
+
+  // rows
+  let y = headerH + 32;
+  ctx.textBaseline = 'alphabetic';
+  items.forEach(({place, visitedAt}, i)=>{
+    ctx.fillStyle = getPinColor(place.cat);
+    ctx.beginPath();
+    ctx.arc(46, y-6, 9, 0, Math.PI*2);
+    ctx.fill();
+
+    ctx.fillStyle = '#22303A';
+    ctx.font = '700 15px Arial';
+    ctx.fillText(place.name, 68, y);
+
+    ctx.fillStyle = '#4B5A63';
+    ctx.font = '400 12.5px Arial';
+    const d = new Date(visitedAt);
+    ctx.fillText(`${CATS[place.cat].label} · navštíveno ${d.toLocaleDateString('cs-CZ')}`, 68, y+18);
+
+    y += rowH;
+  });
+
+  if(items.length === 0){
+    ctx.fillStyle = '#4B5A63';
+    ctx.font = '400 14px Arial';
+    ctx.fillText('Zatím nemáte označená žádná navštívená místa.', 32, headerH + 32);
+  }
+
+  ctx.fillStyle = '#4B5A63';
+  ctx.font = 'italic 11px Arial';
+  ctx.fillText('Vytvořeno v aplikaci Pojizeří & Polabí', 32, H - 20);
+
+  canvas.toBlob(blob=>{
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'moje-cile-pojizeri-polabi.png';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url), 5000);
+  }, 'image/png');
+});
+
+/* ---------------- Plánovač trasy ---------------- */
+const tripBar = document.getElementById('tripBar');
+
+function toggleTripStop(id){
+  const idx = tripStops.indexOf(id);
+  if(idx >= 0){ tripStops.splice(idx,1); }
+  else { tripStops.push(id); }
+  const entry = markers[id];
+  if(entry){
+    updateTripMarkerIcon(id);
+  }
+  renderTripBar();
+}
+
+function updateTripMarkerIcon(id){
+  const entry = markers[id];
+  if(!entry) return;
+  const idx = tripStops.indexOf(id);
+  if(idx >= 0){
+    entry.marker.setIcon(L.divIcon({
+      className:'',
+      html:`<div class="pin ${entry.place.cat}"><span style="font-size:13px;font-weight:800;">${idx+1}</span></div>`,
+      iconSize:[30,30], iconAnchor:[15,28], popupAnchor:[0,-26]
+    }));
+  } else {
+    entry.marker.setIcon(makeIcon(entry.place, !!visitedMap[id]));
+  }
+}
+
+function haversine(lat1,lng1,lat2,lng2){
+  const R = 6371;
+  const dLat = (lat2-lat1)*Math.PI/180;
+  const dLng = (lng2-lng1)*Math.PI/180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function renderTripBar(){
+  const listEl = document.getElementById('tripStopsList');
+  listEl.innerHTML = '';
+  tripStops.forEach((id, i)=>{
+    const place = PLACES.find(p=>p.id===id);
+    if(!place) return;
+    const chip = document.createElement('div');
+    chip.className = 'trip-stop-chip';
+    chip.innerHTML = `<span class="n">${i+1}</span><span>${place.name}</span>`;
+    const rm = document.createElement('button');
+    rm.textContent = '✕';
+    rm.addEventListener('click', ()=> toggleTripStop(id));
+    chip.appendChild(rm);
+    listEl.appendChild(chip);
+  });
+
+  let dist = 0;
+  for(let i=0;i<tripStops.length-1;i++){
+    const a = PLACES.find(p=>p.id===tripStops[i]);
+    const b = PLACES.find(p=>p.id===tripStops[i+1]);
+    if(a && b) dist += haversine(a.lat,a.lng,b.lat,b.lng);
+  }
+  const distEl = document.getElementById('tripDistance');
+  if(tripStops.length === 0){
+    distEl.textContent = 'Klepejte na místa v mapě a přidejte je do trasy';
+  } else if(tripStops.length === 1){
+    distEl.textContent = '1 zastávka vybrána — přidejte další';
+  } else {
+    distEl.textContent = `${tripStops.length} zastávek · ${dist.toFixed(1)} km vzdušnou čarou (skutečná trasa po silnici bude delší)`;
+  }
+}
+
+document.getElementById('tripPlannerBtn').addEventListener('click', ()=>{
+  planningMode = true;
+  tripBar.classList.add('open');
+  panel.classList.remove('open');
+});
+
+document.getElementById('tripCloseBtn').addEventListener('click', ()=>{
+  planningMode = false;
+  tripBar.classList.remove('open');
+});
+
+document.getElementById('tripClearBtn').addEventListener('click', ()=>{
+  const ids = [...tripStops];
+  tripStops = [];
+  ids.forEach(id => updateTripMarkerIcon(id));
+  renderTripBar();
+});
+
+document.getElementById('tripOpenMapsBtn').addEventListener('click', ()=>{
+  if(tripStops.length === 0) return;
+  const coords = tripStops.map(id=>{
+    const p = PLACES.find(pl=>pl.id===id);
+    return `${p.lat},${p.lng}`;
+  });
+  const url = 'https://www.google.com/maps/dir/' + coords.join('/');
+  window.open(url, '_blank', 'noopener');
 });
 </script>
 </body>
