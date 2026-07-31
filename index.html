@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Pojizeří a Polabí — mapa oblasti</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,500&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -158,9 +160,10 @@
     background:rgba(50,43,127,0.1);color:var(--river);
   }
   .more-info-link{
-    display:inline-flex;align-items:center;gap:5px;margin-top:12px;
+    display:inline-flex;align-items:center;gap:5px;
     font-family:'Inter',sans-serif;font-size:12px;font-weight:600;
     color:var(--river);text-decoration:none;
+    background:var(--paper);border-radius:100px;padding:6px 12px;
   }
   .more-info-link:hover{text-decoration:underline;}
 
@@ -568,10 +571,116 @@
     #panel.open{transform:translateY(0);}
     #dashboard{width:100%;max-width:100%;height:82vh;max-height:82vh;border-radius:16px 16px 0 0;align-self:flex-end;}
     #dashboardOverlay{align-items:flex-end;}
+    #onboardCard{width:100%;max-width:100%;border-radius:16px 16px 0 0;transform:translateY(110%);}
+    #onboardOverlay{align-items:flex-end;}
+    #onboardOverlay.open #onboardCard{transform:translateY(0);}
   }
+
+  /* ---------- Loading overlay ---------- */
+  #loadingOverlay{
+    position:fixed;inset:0;z-index:5000;
+    background:var(--paper);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+    transition:opacity .3s ease;
+  }
+  #loadingOverlay.hidden{opacity:0;pointer-events:none;}
+  .spinner{
+    width:34px;height:34px;border-radius:50%;
+    border:3px solid rgba(50,43,127,0.15);border-top-color:var(--river);
+    animation:spin .8s linear infinite;
+  }
+  .spinner.small{width:16px;height:16px;border-width:2px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  #loadingOverlay .txt{font-family:'Playfair Display',serif;font-size:14px;color:var(--river);font-weight:600;}
+
+  /* ---------- Toasts ---------- */
+  #toastStack{
+    position:fixed;left:50%;bottom:24px;transform:translateX(-50%);
+    z-index:4000;display:flex;flex-direction:column;gap:8px;align-items:center;
+    pointer-events:none;
+  }
+  .toast{
+    font-family:'Inter',sans-serif;font-size:13px;font-weight:600;
+    padding:11px 18px;border-radius:10px;color:var(--white);
+    background:var(--ink);box-shadow:0 8px 24px rgba(0,0,0,0.2);
+    opacity:0;transform:translateY(8px);transition:all .25s ease;
+    max-width:90vw;text-align:center;
+  }
+  .toast.show{opacity:1;transform:translateY(0);}
+  .toast.error{background:var(--rust);}
+  .toast.success{background:#1F7A3A;}
+
+  /* ---------- Marker clusters ---------- */
+  .cluster-icon{
+    width:38px;height:38px;border-radius:50%;
+    background:var(--river);color:var(--white);
+    border:3px solid var(--white);box-shadow:0 2px 8px rgba(0,0,0,0.25);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Playfair Display',serif;font-weight:800;font-size:14px;
+  }
+
+  /* ---------- Onboarding ---------- */
+  #onboardOverlay{
+    position:fixed;inset:0;z-index:3000;background:rgba(34,48,58,0.45);
+    display:flex;align-items:center;justify-content:center;
+    opacity:0;pointer-events:none;transition:opacity .2s ease;
+  }
+  #onboardOverlay.open{opacity:1;pointer-events:auto;}
+  #onboardCard{
+    width:420px;max-width:92vw;background:var(--white);border-radius:16px;
+    padding:0;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,0.25);
+    transform:translateY(14px);transition:transform .2s ease;
+  }
+  #onboardOverlay.open #onboardCard{transform:translateY(0);}
+  .onboard-hero{
+    background:linear-gradient(135deg,var(--river),var(--moss));
+    padding:26px 24px 20px;color:var(--white);
+  }
+  .onboard-hero .small{font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;opacity:.85;}
+  .onboard-hero h2{font-family:'Playfair Display',serif;font-size:24px;margin:4px 0 0;}
+  .onboard-body{padding:20px 24px;}
+  .onboard-item{display:flex;gap:12px;margin-bottom:14px;align-items:flex-start;}
+  .onboard-item .ic{font-size:20px;flex-shrink:0;}
+  .onboard-item .t{font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:var(--ink);}
+  .onboard-item .d{font-size:12px;color:var(--ink-soft);margin-top:2px;line-height:1.4;}
+  .onboard-close-btn{
+    width:100%;padding:12px;border:none;background:var(--river);color:var(--white);
+    font-family:'Playfair Display',serif;font-size:14px;font-weight:700;cursor:pointer;
+  }
+  .onboard-close-btn:hover{background:var(--river-light);}
+
+  /* ---------- Share / secondary panel actions ---------- */
+  .panel-secondary-actions{display:flex;gap:8px;margin-top:10px;}
+  .share-btn{
+    display:flex;align-items:center;gap:5px;
+    font-family:'Inter',sans-serif;font-size:11.5px;font-weight:600;
+    color:var(--ink-soft);background:var(--paper);border:none;border-radius:100px;
+    padding:6px 12px;cursor:pointer;
+  }
+  .share-btn:hover{background:var(--paper-dark);}
+
+  /* ---------- Auth extras ---------- */
+  .auth-forgot{
+    display:block;text-align:right;font-size:11.5px;color:var(--river-light);
+    margin:-4px 0 12px;cursor:pointer;text-decoration:underline;
+  }
+  .account-danger{
+    font-size:11px;color:var(--rust);background:none;border:none;cursor:pointer;
+    text-decoration:underline;font-family:'Inter',sans-serif;font-weight:600;
+  }
+
+  /* ---------- Photo upload placeholder ---------- */
+  .ph.uploading{display:flex;align-items:center;justify-content:center;background:var(--paper);}
 </style>
 </head>
 <body>
+
+<div id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="txt">Načítám mapu…</div>
+</div>
+
+<div id="toastStack"></div>
 
 <header>
   <div class="logo">
@@ -630,7 +739,10 @@
         <p class="desc" id="pDesc"></p>
         <div class="tag-pills" id="pTags"></div>
         <div class="coords" id="pCoords"></div>
-        <a class="more-info-link" id="pMoreInfo" href="#" target="_blank" rel="noopener">Zjistit více na pojizeriapolabi.cz ↗</a>
+        <div class="panel-secondary-actions">
+          <a class="more-info-link" id="pMoreInfo" href="#" target="_blank" rel="noopener">Zjistit více ↗</a>
+          <button class="share-btn" id="shareBtn">🔗 Sdílet odkaz</button>
+        </div>
         <button class="visited-toggle" id="visitedToggle">
           <span class="check">✓</span>
           <span id="visitedLabel">Označit jako navštívené</span>
@@ -706,7 +818,7 @@
 <div id="authOverlay">
   <div id="authModal">
     <button class="auth-close" id="authClose">✕</button>
-    <div class="auth-tabs">
+    <div class="auth-tabs" id="authTabs">
       <div class="auth-tab active" data-mode="login">Přihlásit se</div>
       <div class="auth-tab" data-mode="signup">Registrace</div>
     </div>
@@ -717,18 +829,53 @@
         <label>E-mail</label>
         <input type="email" id="authEmail" required autocomplete="email">
       </div>
-      <div class="auth-field">
+      <div class="auth-field" id="authPasswordField">
         <label>Heslo</label>
-        <input type="password" id="authPassword" required autocomplete="current-password" minlength="6">
+        <input type="password" id="authPassword" autocomplete="current-password" minlength="6">
       </div>
+      <span class="auth-forgot" id="authForgotLink">Zapomenuté heslo?</span>
       <button type="submit" class="auth-submit" id="authSubmit">Přihlásit se</button>
       <div class="auth-msg" id="authMsg"></div>
     </form>
   </div>
 </div>
 
+<div id="onboardOverlay">
+  <div id="onboardCard">
+    <div class="onboard-hero">
+      <div class="small">Vítejte</div>
+      <h2>Pojizeří &amp; Polabí</h2>
+    </div>
+    <div class="onboard-body">
+      <div class="onboard-item">
+        <div class="ic">📍</div>
+        <div>
+          <div class="t">Klepněte na místo v mapě</div>
+          <div class="d">Zobrazí se popis, a pokud jste přihlášeni, můžete přidat fotky a poznámku.</div>
+        </div>
+      </div>
+      <div class="onboard-item">
+        <div class="ic">🧭</div>
+        <div>
+          <div class="t">Plánovač trasy</div>
+          <div class="d">Vyberte víc míst na mapě a otevřete trasu rovnou v Google Maps.</div>
+        </div>
+      </div>
+      <div class="onboard-item">
+        <div class="ic">👤</div>
+        <div>
+          <div class="t">Moje cíle</div>
+          <div class="d">Po přihlášení si ukládejte navštívená místa a sledujte svůj postup.</div>
+        </div>
+      </div>
+      <button class="onboard-close-btn" id="onboardCloseBtn">Rozumím, chci prozkoumat mapu</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
 <script>
 /* ---------------- Data ---------------- */
 const CATS = {
@@ -939,6 +1086,38 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution:'&copy; OpenStreetMap contributors'
 }).addTo(map);
 
+const clusterGroup = L.markerClusterGroup({
+  maxClusterRadius: 45,
+  spiderfyOnMaxZoom: true,
+  iconCreateFunction: function(cluster){
+    const count = cluster.getChildCount();
+    const size = count < 10 ? 34 : count < 30 ? 40 : 46;
+    return L.divIcon({
+      html: `<div class="cluster-icon" style="width:${size}px;height:${size}px;">${count}</div>`,
+      className: '',
+      iconSize: L.point(size, size)
+    });
+  }
+});
+map.addLayer(clusterGroup);
+
+/* ---------------- Toasts & loading ---------------- */
+function showToast(message, type){
+  const stack = document.getElementById('toastStack');
+  const el = document.createElement('div');
+  el.className = 'toast' + (type ? ' ' + type : '');
+  el.textContent = message;
+  stack.appendChild(el);
+  requestAnimationFrame(()=> el.classList.add('show'));
+  setTimeout(()=>{
+    el.classList.remove('show');
+    setTimeout(()=> el.remove(), 300);
+  }, 3200);
+}
+function hideLoadingOverlay(){
+  document.getElementById('loadingOverlay').classList.add('hidden');
+}
+
 /* ---------------- Supabase ---------------- */
 const SUPABASE_URL = 'https://mzhdhyfkktjhxauytpjj.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_MuVuCnSBNU4YVbrB-E0yTg_FWmbt74O';
@@ -968,8 +1147,9 @@ function makeIcon(place, visited){
 
 /* ---- Auth UI ---- */
 const authOverlay = document.getElementById('authOverlay');
+
 const authArea = document.getElementById('authArea');
-let authMode = 'login';
+let authMode = 'login'; // login | signup | recovery | newPassword
 
 function renderAuthArea(){
   authArea.innerHTML = '';
@@ -977,10 +1157,25 @@ function renderAuthArea(){
     const initial = (currentUser.email || '?')[0].toUpperCase();
     const chip = document.createElement('div');
     chip.className = 'user-chip';
-    chip.innerHTML = `<span class="avatar">${initial}</span><span>${currentUser.email}</span><button id="logoutBtn">Odhlásit</button>`;
+    chip.innerHTML = `<span class="avatar">${initial}</span><span>${currentUser.email}</span><button id="logoutBtn">Odhlásit</button><button class="account-danger" id="deleteAccountBtn">Smazat účet</button>`;
     authArea.appendChild(chip);
     document.getElementById('logoutBtn').addEventListener('click', async ()=>{
       await sb.auth.signOut();
+      showToast('Byl jsi odhlášen.');
+    });
+    document.getElementById('deleteAccountBtn').addEventListener('click', async ()=>{
+      const ok1 = confirm('Opravdu chceš trvale smazat svůj účet? Smažou se i všechna navštívená místa, fotky a poznámky. Tuto akci nelze vrátit zpět.');
+      if(!ok1) return;
+      const ok2 = confirm('Poslední potvrzení — opravdu pokračovat a nevratně smazat účet?');
+      if(!ok2) return;
+      try{
+        const { error } = await sb.rpc('delete_user');
+        if(error) throw error;
+        await sb.auth.signOut();
+        showToast('Účet byl smazán.', 'success');
+      }catch(err){
+        showToast('Smazání účtu se nepodařilo: ' + (err.message || 'zkus to prosím znovu'), 'error');
+      }
     });
   } else {
     const btn = document.createElement('button');
@@ -1001,15 +1196,50 @@ function closeAuthModal(){
   authOverlay.classList.remove('open');
 }
 function updateAuthTabs(){
+  const tabsWrap = document.getElementById('authTabs');
+  const passwordField = document.getElementById('authPasswordField');
+  const forgotLink = document.getElementById('authForgotLink');
+  const passwordInput = document.getElementById('authPassword');
+
   document.querySelectorAll('.auth-tab').forEach(t=>{
     t.classList.toggle('active', t.dataset.mode === authMode);
   });
-  const isLogin = authMode === 'login';
-  document.getElementById('authTitle').textContent = isLogin ? 'Přihlásit se' : 'Vytvořit účet';
-  document.getElementById('authSub').textContent = isLogin
-    ? 'Přihlas se, ať si můžeš ukládat navštívená místa, fotky a poznámky.'
-    : 'Založ si účet zdarma — vaše data pak najdete na jakémkoli zařízení.';
-  document.getElementById('authSubmit').textContent = isLogin ? 'Přihlásit se' : 'Zaregistrovat se';
+
+  if(authMode === 'recovery'){
+    tabsWrap.style.display = 'none';
+    passwordField.style.display = 'none';
+    passwordInput.required = false;
+    forgotLink.style.display = 'none';
+    document.getElementById('authEmail').required = true;
+    document.getElementById('authTitle').textContent = 'Obnovit heslo';
+    document.getElementById('authSub').textContent = 'Zadej e-mail, na který ti pošleme odkaz pro nastavení nového hesla.';
+    document.getElementById('authSubmit').textContent = 'Poslat odkaz';
+  } else if(authMode === 'newPassword'){
+    tabsWrap.style.display = 'none';
+    passwordField.style.display = 'block';
+    passwordInput.required = true;
+    document.querySelector('#authPasswordField label').textContent = 'Nové heslo';
+    forgotLink.style.display = 'none';
+    document.getElementById('authEmail').required = false;
+    document.getElementById('authEmail').closest('.auth-field').style.display = 'none';
+    document.getElementById('authTitle').textContent = 'Nastavit nové heslo';
+    document.getElementById('authSub').textContent = 'Zadej nové heslo ke svému účtu.';
+    document.getElementById('authSubmit').textContent = 'Uložit nové heslo';
+  } else {
+    tabsWrap.style.display = 'flex';
+    passwordField.style.display = 'block';
+    passwordInput.required = true;
+    document.querySelector('#authPasswordField label').textContent = 'Heslo';
+    document.getElementById('authEmail').required = true;
+    document.getElementById('authEmail').closest('.auth-field').style.display = 'block';
+    const isLogin = authMode === 'login';
+    forgotLink.style.display = isLogin ? 'block' : 'none';
+    document.getElementById('authTitle').textContent = isLogin ? 'Přihlásit se' : 'Vytvořit účet';
+    document.getElementById('authSub').textContent = isLogin
+      ? 'Přihlas se, ať si můžeš ukládat navštívená místa, fotky a poznámky.'
+      : 'Založ si účet zdarma — vaše data pak najdete na jakémkoli zařízení.';
+    document.getElementById('authSubmit').textContent = isLogin ? 'Přihlásit se' : 'Zaregistrovat se';
+  }
 }
 
 document.querySelectorAll('.auth-tab').forEach(tab=>{
@@ -1018,6 +1248,11 @@ document.querySelectorAll('.auth-tab').forEach(tab=>{
     updateAuthTabs();
     document.getElementById('authMsg').textContent = '';
   });
+});
+document.getElementById('authForgotLink').addEventListener('click', ()=>{
+  authMode = 'recovery';
+  updateAuthTabs();
+  document.getElementById('authMsg').textContent = '';
 });
 document.getElementById('authClose').addEventListener('click', closeAuthModal);
 authOverlay.addEventListener('click', (e)=>{ if(e.target === authOverlay) closeAuthModal(); });
@@ -1037,16 +1272,31 @@ document.getElementById('authForm').addEventListener('submit', async (e)=>{
       if(error) throw error;
       closeAuthModal();
       document.getElementById('authForm').reset();
-    } else {
+      showToast('Přihlášení proběhlo úspěšně.', 'success');
+    } else if(authMode === 'signup'){
       const { data, error } = await sb.auth.signUp({ email, password });
       if(error) throw error;
       if(data.session){
         closeAuthModal();
         document.getElementById('authForm').reset();
+        showToast('Účet vytvořen a jsi přihlášen/a.', 'success');
       } else {
         msg.className = 'auth-msg success';
         msg.textContent = 'Účet vytvořen — zkontroluj e-mail a potvrď registraci, pak se přihlas.';
       }
+    } else if(authMode === 'recovery'){
+      const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.href.split('?')[0].split('#')[0] });
+      if(error) throw error;
+      msg.className = 'auth-msg success';
+      msg.textContent = 'Pokud e-mail existuje, poslali jsme na něj odkaz pro obnovení hesla.';
+    } else if(authMode === 'newPassword'){
+      const { error } = await sb.auth.updateUser({ password });
+      if(error) throw error;
+      closeAuthModal();
+      document.getElementById('authForm').reset();
+      document.getElementById('authEmail').closest('.auth-field').style.display = 'block';
+      document.querySelector('#authPasswordField label').textContent = 'Heslo';
+      showToast('Heslo bylo změněno.', 'success');
     }
   } catch(err){
     msg.className = 'auth-msg error';
@@ -1092,6 +1342,9 @@ sb.auth.onAuthStateChange(async (event, session)=>{
   currentUser = session ? session.user : null;
   renderAuthArea();
   await refreshAfterAuthChange();
+  if(event === 'PASSWORD_RECOVERY'){
+    openAuthModal('newPassword');
+  }
 });
 
 function buildMarkers(){
@@ -1103,18 +1356,31 @@ function buildMarkers(){
       else { openPlace(place); }
     });
     markers[place.id] = {marker:m, place};
-    m.addTo(map);
+    clusterGroup.addLayer(m);
   }
 }
 
 async function initApp(){
   renderAuthArea();
-  const { data: { session } } = await sb.auth.getSession();
-  currentUser = session ? session.user : null;
-  renderAuthArea();
-  await loadRecords();
+  try{
+    const { data: { session } } = await sb.auth.getSession();
+    currentUser = session ? session.user : null;
+    renderAuthArea();
+    await loadRecords();
+  }catch(err){
+    showToast('Nepodařilo se načíst data ze serveru. Zkontroluj připojení k internetu.', 'error');
+  }
   buildMarkers();
   updateMyPlacesCount();
+  hideLoadingOverlay();
+
+  const placeId = new URLSearchParams(window.location.search).get('place');
+  if(placeId){
+    const place = PLACES.find(p=>p.id===placeId);
+    if(place) openPlace(place, true);
+  }
+
+  maybeShowOnboarding();
 }
 initApp();
 
@@ -1124,15 +1390,18 @@ function updateMyPlacesCount(){
 
 function applyFilters(){
   const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  const tagLabels = {rodiny:'rodiny s dětmi', bezbarierove:'bezbariérové'};
   Object.values(markers).forEach(({marker, place})=>{
     const catOk = activeCats.has(place.cat);
-    const searchOk = !q || place.name.toLowerCase().includes(q);
+    const haystack = (place.name + ' ' + place.desc + ' ' +
+      (place.tags||[]).map(t=>tagLabels[t]||t).join(' ')).toLowerCase();
+    const searchOk = !q || haystack.includes(q);
     const tagOk = activeTagFilters.size === 0 ||
       [...activeTagFilters].every(t => place.tags && place.tags.includes(t));
     if(catOk && searchOk && tagOk){
-      if(!map.hasLayer(marker)) marker.addTo(map);
+      if(!clusterGroup.hasLayer(marker)) clusterGroup.addLayer(marker);
     } else {
-      if(map.hasLayer(marker)) map.removeLayer(marker);
+      if(clusterGroup.hasLayer(marker)) clusterGroup.removeLayer(marker);
     }
   });
 }
@@ -1161,7 +1430,7 @@ const panel = document.getElementById('panel');
 const panelEmpty = document.getElementById('panelEmpty');
 const panelContent = document.getElementById('panelContent');
 
-async function openPlace(place){
+async function openPlace(place, isDeepLink){
   currentPlace = place;
   panel.classList.add('open');
   panelEmpty.style.display = 'none';
@@ -1183,8 +1452,28 @@ async function openPlace(place){
   updateVisitedToggleUI(place);
   loadPlacePanelData(place);
 
-  map.panTo([place.lat, place.lng]);
+  if(!isDeepLink){
+    map.panTo([place.lat, place.lng]);
+  } else {
+    map.setView([place.lat, place.lng], 13);
+  }
+
+  const url = new URL(window.location.href);
+  url.searchParams.set('place', place.id);
+  history.replaceState(null, '', url.toString());
 }
+
+document.getElementById('shareBtn').addEventListener('click', async ()=>{
+  if(!currentPlace) return;
+  const url = new URL(window.location.href);
+  url.searchParams.set('place', currentPlace.id);
+  try{
+    await navigator.clipboard.writeText(url.toString());
+    showToast('Odkaz na místo zkopírován do schránky.', 'success');
+  }catch(e){
+    showToast(url.toString(), null);
+  }
+});
 
 function loadPlacePanelData(place){
   document.getElementById('noteInput').value = '';
@@ -1217,41 +1506,70 @@ function loadPlacePanelData(place){
 document.getElementById('panelClose').addEventListener('click', ()=>{
   panel.classList.remove('open');
   currentPlace = null;
+  const url = new URL(window.location.href);
+  url.searchParams.delete('place');
+  history.replaceState(null, '', url.toString());
 });
+
+function photoSrc(p){ return typeof p === 'string' ? p : p.url; }
 
 function renderPhotos(){
   const grid = document.getElementById('photoGrid');
   grid.innerHTML = '';
-  currentPhotos.forEach((src, i)=>{
+  currentPhotos.forEach((p, i)=>{
     const div = document.createElement('div');
     div.className = 'ph';
-    div.innerHTML = `<img src="${src}"><button data-i="${i}">✕</button>`;
+    div.innerHTML = `<img src="${photoSrc(p)}"><button data-i="${i}">✕</button>`;
     div.querySelector('button').addEventListener('click', (e)=>{
       e.stopPropagation();
-      currentPhotos.splice(i,1);
+      const removed = currentPhotos.splice(i,1)[0];
       renderPhotos();
+      if(removed && removed.path){
+        sb.storage.from('place-photos').remove([removed.path]).catch(()=>{});
+      }
     });
     grid.appendChild(div);
   });
 }
 
-document.getElementById('photoInput').addEventListener('change', (e)=>{
+function addUploadingTile(){
+  const grid = document.getElementById('photoGrid');
+  const div = document.createElement('div');
+  div.className = 'ph uploading';
+  div.innerHTML = '<div class="spinner small"></div>';
+  grid.appendChild(div);
+  return div;
+}
+
+document.getElementById('photoInput').addEventListener('change', async (e)=>{
   if(!requireAuth()){ e.target.value=''; return; }
   const files = Array.from(e.target.files || []);
-  files.forEach(file=>{
-    const reader = new FileReader();
-    reader.onload = ()=>{
-      currentPhotos.push(reader.result);
-      renderPhotos();
-    };
-    reader.readAsDataURL(file);
-  });
   e.target.value = '';
+  const place = currentPlace;
+  for(const file of files){
+    const tile = addUploadingTile();
+    try{
+      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g,'') || 'jpg';
+      const path = `${currentUser.id}/${place.id}/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
+      const { error: upErr } = await sb.storage.from('place-photos').upload(path, file, { upsert:false });
+      if(upErr) throw upErr;
+      const { data: pub } = sb.storage.from('place-photos').getPublicUrl(path);
+      if(currentPlace === place){
+        currentPhotos.push({ url: pub.publicUrl, path });
+        tile.remove();
+        renderPhotos();
+      }
+    }catch(err){
+      tile.remove();
+      showToast('Nahrání fotky se nepovedlo. Zkus to prosím znovu.', 'error');
+    }
+  }
 });
 
 document.getElementById('saveBtn').addEventListener('click', async ()=>{
   if(!currentPlace) return;
   if(!requireAuth()) return;
+  const saveBtn = document.getElementById('saveBtn');
   const note = document.getElementById('noteInput').value;
   const wasVisited = !!visitedMap[currentPlace.id];
   const nowIso = new Date().toISOString();
@@ -1264,6 +1582,7 @@ document.getElementById('saveBtn').addEventListener('click', async ()=>{
     visited_at: wasVisited ? new Date(visitedMap[currentPlace.id]).toISOString() : null,
     updated_at: nowIso
   };
+  saveBtn.disabled = true;
   try{
     const { data, error } = await sb.from('place_records')
       .upsert(payload, { onConflict: 'user_id,place_id' })
@@ -1275,7 +1594,9 @@ document.getElementById('saveBtn').addEventListener('click', async ()=>{
     setTimeout(()=>status.classList.remove('show'), 1800);
     document.getElementById('lastUpdated').textContent = 'Naposledy upraveno právě teď';
   }catch(err){
-    alert('Záznam se nepodařilo uložit. Zkuste to prosím znovu.');
+    showToast('Záznam se nepodařilo uložit. Zkontroluj připojení a zkus to znovu.', 'error');
+  } finally {
+    saveBtn.disabled = false;
   }
 });
 
@@ -1328,7 +1649,7 @@ document.getElementById('visitedToggle').addEventListener('click', async ()=>{
     updateVisitedToggleUI(currentPlace);
     updateMyPlacesCount();
     if(entry) entry.marker.setIcon(makeIcon(currentPlace, !!visitedMap[id]));
-    alert('Nepodařilo se uložit. Zkus to prosím znovu.');
+    showToast('Nepodařilo se uložit. Zkus to prosím znovu.', 'error');
   }
 });
 
@@ -1449,7 +1770,7 @@ document.getElementById('dashResetBtn').addEventListener('click', async ()=>{
     renderDashboard();
     if(currentPlace) updateVisitedToggleUI(currentPlace);
   }catch(err){
-    alert('Reset se nepodařil. Zkus to prosím znovu.');
+    showToast('Reset se nepodařil. Zkus to prosím znovu.', 'error');
   }
 });
 
@@ -1631,6 +1952,18 @@ document.getElementById('tripOpenMapsBtn').addEventListener('click', ()=>{
   });
   const url = 'https://www.google.com/maps/dir/' + coords.join('/');
   window.open(url, '_blank', 'noopener');
+});
+
+/* ---------------- Onboarding (první návštěva) ---------------- */
+function maybeShowOnboarding(){
+  try{
+    if(localStorage.getItem('poapo_onboarded')){ return; }
+  }catch(e){ /* localStorage nedostupné, zobrazíme onboarding vždy */ }
+  document.getElementById('onboardOverlay').classList.add('open');
+}
+document.getElementById('onboardCloseBtn').addEventListener('click', ()=>{
+  document.getElementById('onboardOverlay').classList.remove('open');
+  try{ localStorage.setItem('poapo_onboarded', '1'); }catch(e){}
 });
 </script>
 </body>
