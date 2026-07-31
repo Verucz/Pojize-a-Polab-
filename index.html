@@ -6,7 +6,7 @@
 <title>Pojizeří a Polabí — mapa oblasti</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,500&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
     --paper:#EFE8D6;
@@ -44,8 +44,19 @@
     gap:16px;
     padding:12px 18px;
     background:var(--white);
-    border-bottom:1px solid var(--line);
     flex-shrink:0;
+  }
+  header::after{
+    content:'';
+    position:absolute;
+    left:0;right:0;
+    bottom:-13px;
+    height:20px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 20'%3E%3Cpath d='M0 8 Q7.5 -2 15 8 T30 8 T45 8 T60 8 V20 H0 Z' fill='%23FBF9F3'/%3E%3C/svg%3E");
+    background-repeat:repeat-x;
+    background-size:60px 20px;
+    z-index:5;
+    pointer-events:none;
   }
   .logo{
     display:flex;
@@ -70,9 +81,10 @@
   .logo .name .small{
     display:block;
     font-size:10.5px;
-    letter-spacing:0.12em;
+    letter-spacing:0.16em;
     text-transform:uppercase;
-    color:var(--ink-soft);
+    color:var(--moss);
+    font-weight:700;
   }
   .search-wrap{
     flex:1;
@@ -106,10 +118,10 @@
     display:flex;
     align-items:center;
     gap:6px;
-    font-family:'Inter',sans-serif;
-    font-size:12.5px;
+    font-family:'Playfair Display',serif;
+    font-size:13.5px;
     font-weight:600;
-    padding:7px 12px;
+    padding:7px 14px;
     border-radius:100px;
     border:1.5px solid var(--line);
     background:var(--white);
@@ -135,14 +147,14 @@
   .extra-filters{display:flex;gap:8px;margin-left:6px;padding-left:10px;border-left:1.5px solid var(--line);}
   .chip-extra{
     display:flex;align-items:center;gap:5px;
-    font-family:'Inter',sans-serif;font-size:12px;font-weight:600;
-    padding:7px 11px;border-radius:100px;border:1.5px solid var(--line);
+    font-family:'Playfair Display',serif;font-size:13px;font-weight:600;
+    padding:7px 13px;border-radius:100px;border:1.5px solid var(--line);
     background:var(--white);color:var(--ink-soft);cursor:pointer;user-select:none;white-space:nowrap;
   }
   .chip-extra.active{background:var(--ink);color:var(--white);border-color:var(--ink);}
   .tag-pills{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
   .tag-pill{
-    font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:100px;
+    font-size:10.5px;font-weight:700;letter-spacing:.04em;padding:3px 9px;border-radius:100px;
     background:rgba(50,43,127,0.1);color:var(--river);
   }
   .more-info-link{
@@ -155,8 +167,8 @@
   /* Moje cíle button */
   .my-places-btn{
     display:flex;align-items:center;gap:7px;
-    font-family:'Inter',sans-serif;font-size:12.5px;font-weight:700;
-    padding:8px 14px;border-radius:100px;border:none;
+    font-family:'Playfair Display',serif;font-size:13.5px;font-weight:700;
+    padding:8px 16px;border-radius:100px;border:none;
     background:var(--river);color:var(--white);cursor:pointer;
     white-space:nowrap;flex-shrink:0;
   }
@@ -164,7 +176,7 @@
   .my-places-btn svg{width:14px;height:14px;}
   .my-places-btn .count{
     background:rgba(255,255,255,0.25);border-radius:100px;
-    padding:1px 7px;font-size:11px;
+    padding:1px 7px;font-size:11px;font-family:'Inter',sans-serif;
   }
 
   /* ---------- Layout ---------- */
@@ -256,7 +268,7 @@
   .cat-badge.restaurant{background:var(--rust);}
   .cat-badge.trip{background:var(--teal);}
   .panel-hero h2{
-    font-family:'Fraunces',serif;
+    font-family:'Playfair Display',serif;
     font-size:22px;font-weight:600;
     margin:0 0 8px;color:var(--river);
     padding-right:26px;
@@ -361,10 +373,10 @@
     position:relative;
   }
   .dash-header h2{
-    font-family:'Fraunces',serif;font-size:20px;font-weight:600;
+    font-family:'Playfair Display',serif;font-size:22px;font-weight:700;
     color:var(--river);margin:0 0 4px;padding-right:30px;
   }
-  .dash-header .sub{font-size:12.5px;color:var(--ink-soft);}
+  .dash-header .sub{font-size:11.5px;color:var(--moss);font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
   .dash-close{
     position:absolute;top:16px;right:16px;
     width:28px;height:28px;border-radius:50%;
@@ -382,27 +394,32 @@
   }
   .dash-cats{display:flex;flex-wrap:wrap;gap:6px;}
   .dash-cat-pill{
-    font-size:11px;font-weight:600;color:var(--ink-soft);
+    font-size:10.5px;font-weight:700;letter-spacing:.04em;color:var(--ink-soft);
     padding:3px 9px;border-radius:100px;background:var(--paper);
     display:flex;align-items:center;gap:5px;
   }
   .dash-cat-pill .dot{width:6px;height:6px;border-radius:50%;}
   .dash-list{overflow-y:auto;flex:1;padding:8px 12px;}
   .dash-item{
-    display:flex;align-items:center;gap:12px;
-    padding:11px 10px;border-radius:10px;cursor:pointer;
+    display:flex;align-items:center;gap:13px;
+    padding:12px 10px;border-radius:10px;cursor:pointer;
     transition:background .12s ease;
   }
   .dash-item:hover{background:var(--paper);}
   .dash-item .icon{
-    width:36px;height:36px;border-radius:50%;flex-shrink:0;
+    width:38px;height:38px;border-radius:9px;flex-shrink:0;
     display:flex;align-items:center;justify-content:center;font-size:16px;
     color:var(--white);
   }
   .dash-item .info{flex:1;min-width:0;}
-  .dash-item .info .n{font-size:13.5px;font-weight:600;color:var(--ink);
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .dash-item .info .d{font-size:11px;color:var(--ink-soft);margin-top:1px;}
+  .dash-item .info .n{
+    font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--ink);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .dash-item .info .d{
+    font-size:10.5px;color:var(--moss);margin-top:3px;font-weight:700;
+    letter-spacing:.05em;text-transform:uppercase;
+  }
   .dash-empty{
     padding:40px 30px;text-align:center;color:var(--ink-soft);
   }
@@ -412,6 +429,13 @@
     padding:12px 22px;border-top:1px solid var(--line);
     display:flex;justify-content:flex-end;
   }
+  .dash-brand-footer{
+    background:var(--river);color:rgba(255,255,255,0.75);
+    font-family:'Inter',sans-serif;font-size:10.5px;font-weight:600;
+    padding:10px 22px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;
+    border-radius:0 0 16px 16px;
+  }
+  .dash-brand-footer .sep{opacity:0.5;}
   .dash-reset-btn{
     font-family:'Inter',sans-serif;font-size:12px;font-weight:600;
     color:var(--rust);background:none;border:none;cursor:pointer;
@@ -448,8 +472,8 @@
   }
   .trip-bar-actions{display:flex;gap:8px;align-items:center;flex-shrink:0;}
   .trip-btn{
-    font-family:'Inter',sans-serif;font-size:12px;font-weight:700;
-    padding:9px 14px;border-radius:9px;border:none;cursor:pointer;white-space:nowrap;
+    font-family:'Playfair Display',serif;font-size:13.5px;font-weight:700;
+    padding:9px 16px;border-radius:9px;border:none;cursor:pointer;white-space:nowrap;
   }
   .trip-btn.primary{background:var(--teal);color:var(--white);}
   .trip-btn.ghost{background:var(--paper);color:var(--ink-soft);}
@@ -462,8 +486,8 @@
   /* ---------- Auth ---------- */
   .auth-btn{
     display:flex;align-items:center;gap:7px;
-    font-family:'Inter',sans-serif;font-size:12.5px;font-weight:700;
-    padding:8px 14px;border-radius:100px;border:1.5px solid var(--line);
+    font-family:'Playfair Display',serif;font-size:13.5px;font-weight:700;
+    padding:8px 16px;border-radius:100px;border:1.5px solid var(--line);
     background:var(--white);color:var(--ink);cursor:pointer;white-space:nowrap;flex-shrink:0;
   }
   .auth-btn:hover{background:var(--paper);}
@@ -503,7 +527,7 @@
     font-family:'Inter',sans-serif;font-size:12.5px;font-weight:700;color:var(--ink-soft);
   }
   .auth-tab.active{background:var(--white);color:var(--river);}
-  #authModal h2{font-family:'Fraunces',serif;font-size:19px;color:var(--river);margin:0 0 4px;}
+  #authModal h2{font-family:'Playfair Display',serif;font-size:19px;color:var(--river);margin:0 0 4px;}
   #authModal .sub{font-size:12.5px;color:var(--ink-soft);margin:0 0 18px;}
   .auth-field{margin-bottom:12px;}
   .auth-field label{display:block;font-size:11.5px;font-weight:700;color:var(--ink-soft);margin-bottom:5px;}
@@ -657,6 +681,11 @@
     <div class="dash-list" id="dashList"></div>
     <div class="dash-footer">
       <button class="dash-reset-btn" id="dashResetBtn">Odznačit všechna navštívená místa</button>
+    </div>
+    <div class="dash-brand-footer">
+      <span>Pojizeří a Polabí, z.s.</span>
+      <span class="sep">·</span>
+      <span>Komenského náměstí 61, Mladá Boleslav</span>
     </div>
   </div>
 </div>
