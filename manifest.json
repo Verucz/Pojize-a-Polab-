@@ -1,0 +1,38 @@
+{
+  "name": "Pojizeří a Polabí — mapa oblasti",
+  "short_name": "Pojizeří a Polabí",
+  "description": "Interaktivní mapa turistických cílů, hotelů, restaurací, sportu a výletů v oblasti Pojizeří a Polabí.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#EFE8D6",
+  "theme_color": "#322B7F",
+  "lang": "cs",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
