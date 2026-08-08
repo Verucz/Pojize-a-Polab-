@@ -2,7 +2,7 @@
 // Cachuje jen "app shell" (HTML stránku, ikony, knihovny) — ne mapové dlaždice
 // ani data ze Supabase, ta vždy potřebují připojení k internetu.
 
-const CACHE_VERSION = 'poapo-v1';
+const CACHE_VERSION = 'poapo-v2';
 const APP_SHELL = [
   '/',
   '/manifest.json',
@@ -62,3 +62,24 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
+// Klepnutí na notifikaci o blízkém místě otevře appku (případně rovnou to místo)
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const placeId = event.notification.data && event.notification.data.placeId;
+  const targetUrl = placeId ? `/?place=${encodeURIComponent(placeId)}` : '/';
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if ('focus' in client) {
+          client.navigate(targetUrl).catch(() => {});
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
+    })
+  );
+});
+
