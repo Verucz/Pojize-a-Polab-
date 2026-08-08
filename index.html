@@ -658,14 +658,14 @@
 
   /* mobile */
   @media (max-width:760px){
-    header{flex-wrap:wrap;padding:10px 12px;}
+    header{padding:10px 12px;}
+    .header-top{flex-wrap:wrap;row-gap:8px;}
     .logo .name .small{display:none;}
     .logo .name{border-left:none;padding-left:0;}
     .search-wrap{max-width:130px;}
-    .filters{order:3;width:100%;margin-left:0;}
-    .my-places-btn{order:2;}
-    .auth-btn, .user-chip{order:2;}
-    .locate-btn{order:2;}
+    .header-actions{width:100%;justify-content:space-between;margin-left:0;}
+    .filters{width:100%;}
+    #toolsDropdown{left:12px;right:12px;min-width:auto;}
     #panel{
       position:absolute;right:0;bottom:0;top:auto;
       width:100%;height:78%;
@@ -1084,6 +1084,12 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
 <script>
+/* Pojistka: ať selže cokoliv jinde ve skriptu, loading obrazovka po 8s zmizí sama */
+setTimeout(function(){
+  var el = document.getElementById('loadingOverlay');
+  if(el) el.classList.add('hidden');
+}, 8000);
+
 /* ---------------- Data ---------------- */
 /* ==================== I18N (CZ / EN / DE) ==================== */
 const I18N = {
@@ -2086,11 +2092,15 @@ async function refreshAfterAuthChange(){
 }
 
 sb.auth.onAuthStateChange(async (event, session)=>{
-  currentUser = session ? session.user : null;
-  renderAuthArea();
-  await refreshAfterAuthChange();
-  if(event === 'PASSWORD_RECOVERY'){
-    openAuthModal('newPassword');
+  try{
+    currentUser = session ? session.user : null;
+    renderAuthArea();
+    await refreshAfterAuthChange();
+    if(event === 'PASSWORD_RECOVERY'){
+      openAuthModal('newPassword');
+    }
+  }catch(err){
+    console.error('onAuthStateChange handler failed', err);
   }
 });
 
@@ -2117,9 +2127,10 @@ async function initApp(){
       if(I18N[browserLang]) initialLang = browserLang;
     }
   }catch(e){}
-  applyLanguage(initialLang);
+  try{ applyLanguage(initialLang); }catch(e){ console.error('applyLanguage failed', e); }
 
-  renderAuthArea();
+  try{ renderAuthArea(); }catch(e){ console.error('renderAuthArea failed', e); }
+
   try{
     const { data: { session } } = await sb.auth.getSession();
     currentUser = session ? session.user : null;
@@ -2127,24 +2138,39 @@ async function initApp(){
     await loadRecords();
     await loadRatings();
   }catch(err){
-    showToast(t('loadDataFailed'), 'error');
+    console.error('Supabase init failed', err);
+    try{ showToast(t('loadDataFailed'), 'error'); }catch(e){}
   }
-  buildMarkers();
-  updateMyPlacesCount();
+
+  try{
+    buildMarkers();
+  }catch(err){
+    console.error('buildMarkers failed', err);
+  }
+
+  try{ updateMyPlacesCount(); }catch(e){ console.error('updateMyPlacesCount failed', e); }
+
+  // Ať selže cokoliv výše, mapa se MUSÍ zobrazit — loading overlay schováme vždy.
   hideLoadingOverlay();
 
-  const placeId = new URLSearchParams(window.location.search).get('place');
-  if(placeId){
-    const place = PLACES.find(p=>p.id===placeId);
-    if(place) openPlace(place, true);
-  }
+  try{
+    const placeId = new URLSearchParams(window.location.search).get('place');
+    if(placeId){
+      const place = PLACES.find(p=>p.id===placeId);
+      if(place) openPlace(place, true);
+    }
+  }catch(e){ console.error('deep link open failed', e); }
 
-  maybeShowOnboarding();
+  try{ maybeShowOnboarding(); }catch(e){ console.error('onboarding failed', e); }
 }
-initApp();
+initApp().catch(err=>{
+  console.error('initApp failed entirely', err);
+  hideLoadingOverlay();
+});
 
 function updateMyPlacesCount(){
   document.getElementById('myPlacesCount').textContent = Object.keys(visitedMap).length;
+  if(typeof updateToolsMenuBadge === 'function') updateToolsMenuBadge();
 }
 
 function applyFilters(){
@@ -2924,12 +2950,22 @@ if(isIOS() && !isStandalone() && shouldOfferInstall()){
   setTimeout(()=> installBanner.classList.add('show'), 2000);
 }
 
-/* ---------------- Notifikace ---------------- */
+/* ---------------- Notifikace (skutečný web push) ---------------- */
+const VAPID_PUBLIC_KEY = 'BDy2FwpAwzESlZrcHH53TjhGXTSK4AD2OtNsl6ww8BukQSvsMqza_Xb1Ydrkz0UWqI8JMZdQp1XcVT7TVyvhH_Q';
+
+function urlBase64ToUint8Array(base64String){
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = atob(base64);
+  return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
+}
+
 const notifBtn = document.getElementById('notifBtn');
 const notifBtnLabel = document.getElementById('notifBtnLabel');
+let pushSubscribed = false;
 
 function updateNotifBtnUI(){
-  if(!('Notification' in window)){
+  if(!('Notification' in window) || !('PushManager' in window)){
     notifBtn.style.display = 'none';
     return;
   }
@@ -2945,13 +2981,55 @@ function updateNotifBtnUI(){
   notifBtnLabel.removeAttribute('data-i18n');
 }
 
+async function subscribeToPush(){
+  if(!currentUser) return null;
+  try{
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if(!sub){
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      });
+    }
+    const json = sub.toJSON();
+    const { error } = await sb.from('push_subscriptions').upsert({
+      user_id: currentUser.id,
+      endpoint: json.endpoint,
+      p256dh: json.keys.p256dh,
+      auth: json.keys.auth
+    }, { onConflict: 'endpoint' });
+    if(error) throw error;
+    pushSubscribed = true;
+    return sub;
+  }catch(err){
+    console.error('Push subscribe failed', err);
+    return null;
+  }
+}
+
+async function sendTestPush(){
+  try{
+    const { data, error } = await sb.functions.invoke('send-push', {
+      body: { title: '📍 ' + t('notifNearbyTitle') + ' Pojizeří a Polabí', body: t('notifEnabled'), url: '/' }
+    });
+    if(error) throw error;
+  }catch(err){
+    console.error('Test push failed', err);
+  }
+}
+
 notifBtn.addEventListener('click', async ()=>{
-  if(!('Notification' in window)){
+  if(!('Notification' in window) || !('PushManager' in window)){
     showToast(t('notifUnsupported'), 'error');
     return;
   }
+  if(!requireAuth()) return;
+
   if(Notification.permission === 'granted'){
+    if(!pushSubscribed) await subscribeToPush();
     showToast(t('notifEnabled'), 'success');
+    sendTestPush();
     return;
   }
   if(Notification.permission === 'denied'){
@@ -2961,7 +3039,9 @@ notifBtn.addEventListener('click', async ()=>{
   const result = await Notification.requestPermission();
   updateNotifBtnUI();
   if(result === 'granted'){
+    await subscribeToPush();
     showToast(t('notifEnabled'), 'success');
+    sendTestPush();
   } else if(result === 'denied'){
     showToast(t('notifDenied'), 'error');
   }
