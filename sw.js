@@ -2,7 +2,7 @@
 // Cachuje jen "app shell" (HTML stránku, ikony, knihovny) — ne mapové dlaždice
 // ani data ze Supabase, ta vždy potřebují připojení k internetu.
 
-const CACHE_VERSION = 'poapo-v2';
+const CACHE_VERSION = 'poapo-v3';
 const APP_SHELL = [
   '/',
   '/manifest.json',
@@ -63,11 +63,31 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
+// Skutečná server push notifikace (od Edge Function přes VAPID) — appka
+// nemusí běžet ani na pozadí, service worker ji zobrazí sám.
+self.addEventListener('push', (event) => {
+  let data = { title: 'Pojizeří a Polabí', body: '', url: '/' };
+  try {
+    if (event.data) data = { ...data, ...event.data.json() };
+  } catch (e) {
+    if (event.data) data.body = event.data.text();
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: '/icon-192.png',
+      badge: '/icon-192.png',
+      data: { url: data.url },
+    })
+  );
+});
+
 // Klepnutí na notifikaci o blízkém místě otevře appku (případně rovnou to místo)
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const placeId = event.notification.data && event.notification.data.placeId;
-  const targetUrl = placeId ? `/?place=${encodeURIComponent(placeId)}` : '/';
+  const notifData = event.notification.data || {};
+  const placeId = notifData.placeId;
+  const targetUrl = notifData.url || (placeId ? `/?place=${encodeURIComponent(placeId)}` : '/');
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
       for (const client of clientList) {
