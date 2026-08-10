@@ -598,18 +598,37 @@
   }
   .auth-btn:hover{background:var(--paper);}
   .user-chip{
-    display:flex;align-items:center;gap:9px;
-    font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;color:var(--ink);
-    flex-shrink:0;white-space:nowrap;
+    position:relative;
+    flex-shrink:0;
   }
-  .user-chip .avatar{
-    width:26px;height:26px;border-radius:50%;background:var(--river);color:var(--white);
-    display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;
+  .user-chip .avatar-btn{
+    width:34px;height:34px;border-radius:50%;background:var(--river);color:var(--white);
+    display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;
+    border:none;cursor:pointer;font-family:'Inter',sans-serif;
   }
-  .user-chip button{
-    font-family:'Inter',sans-serif;font-size:11.5px;font-weight:600;color:var(--ink-soft);
-    background:none;border:none;cursor:pointer;text-decoration:underline;
+  .user-chip .avatar-btn:hover{background:var(--river-light);}
+  .user-menu{
+    position:absolute;top:calc(100% + 8px);right:0;
+    background:var(--white);border-radius:14px;
+    box-shadow:0 12px 32px rgba(0,0,0,0.18);border:1px solid var(--line);
+    padding:14px;min-width:230px;
+    opacity:0;visibility:hidden;transform:translateY(-6px);
+    transition:all .15s ease;
+    z-index:1300;
   }
+  .user-menu.open{opacity:1;visibility:visible;transform:translateY(0);}
+  .user-menu .um-email{
+    font-family:'Inter',sans-serif;font-size:12.5px;font-weight:700;color:var(--ink);
+    word-break:break-all;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--line);
+  }
+  .user-menu button{
+    display:block;width:100%;text-align:left;
+    font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;
+    background:none;border:none;cursor:pointer;padding:8px 4px;border-radius:8px;
+  }
+  .user-menu button:hover{background:var(--paper);}
+  .user-menu .um-logout{color:var(--ink-soft);}
+  .user-menu .um-delete{color:var(--rust);}
   #authOverlay{
     position:fixed;inset:0;z-index:2500;
     background:rgba(34,48,58,0.45);
@@ -1232,6 +1251,19 @@ const I18N = {
 
 let currentLang = 'cs';
 function t(key){ return (I18N[currentLang] && I18N[currentLang][key]) || I18N.cs[key] || key; }
+
+// Bezpečně převede chybu na čistý text — vyhne se DataCloneError, který na
+// mobilu umí shodit zobrazení konzole, když se do ní pošle komplexní objekt.
+function safeErr(e){
+  try{
+    if(!e) return 'unknown error';
+    if(typeof e === 'string') return e;
+    if(e.message) return String(e.message) + (e.code ? ' (' + e.code + ')' : '');
+    return JSON.stringify(e);
+  }catch(_){
+    return String(e);
+  }
+}
 function getDesc(place){
   if(currentLang === 'en' && place.desc_en) return place.desc_en;
   if(currentLang === 'de' && place.desc_de) return place.desc_de;
@@ -1825,6 +1857,11 @@ let currentPhotos = [];
 let visitedMap = {}; // id -> visitedAt timestamp
 let planningMode = false;
 let tripStops = []; // array of place ids in order
+let watchId = null;
+let userMarker = null;
+let nearbyIds = new Set();
+let locateActive = false;
+const dashboardOverlay = document.getElementById('dashboardOverlay');
 
 function makeIcon(place, visited){
   return L.divIcon({
@@ -1840,6 +1877,14 @@ function makeIcon(place, visited){
 const authOverlay = document.getElementById('authOverlay');
 
 const authArea = document.getElementById('authArea');
+const panel = document.getElementById('panel');
+const panelEmpty = document.getElementById('panelEmpty');
+const panelContent = document.getElementById('panelContent');
+const notifBtn = document.getElementById('notifBtn');
+const notifBtnLabel = document.getElementById('notifBtnLabel');
+const toolsMenuBtn = document.getElementById('toolsMenuBtn');
+const toolsDropdown = document.getElementById('toolsDropdown');
+const toolsMenuBadge = document.getElementById('toolsMenuBadge');
 let authMode = 'login'; // login | signup | recovery | newPassword
 
 function renderAuthArea(){
@@ -1848,13 +1893,43 @@ function renderAuthArea(){
     const initial = (currentUser.email || '?')[0].toUpperCase();
     const chip = document.createElement('div');
     chip.className = 'user-chip';
-    chip.innerHTML = `<span class="avatar">${initial}</span><span>${currentUser.email}</span><button id="logoutBtn">${t('logout')}</button><button class="account-danger" id="deleteAccountBtn">${t('deleteAccount')}</button>`;
+    chip.innerHTML = `
+      <button class="avatar-btn" id="avatarBtn" aria-haspopup="true" aria-expanded="false">${initial}</button>
+      <div class="user-menu" id="userMenu">
+        <div class="um-email">${currentUser.email}</div>
+        <button class="um-logout" id="logoutBtn">${t('logout')}</button>
+        <button class="um-delete" id="deleteAccountBtn">${t('deleteAccount')}</button>
+      </div>`;
     authArea.appendChild(chip);
+
+    const avatarBtn = document.getElementById('avatarBtn');
+    const userMenu = document.getElementById('userMenu');
+
+    function closeUserMenu(){
+      userMenu.classList.remove('open');
+      avatarBtn.setAttribute('aria-expanded', 'false');
+    }
+    avatarBtn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const isOpen = userMenu.classList.toggle('open');
+      avatarBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+    document.addEventListener('click', (e)=>{
+      if(userMenu.classList.contains('open') && !userMenu.contains(e.target) && e.target !== avatarBtn){
+        closeUserMenu();
+      }
+    });
+    document.addEventListener('keydown', (e)=>{
+      if(e.key === 'Escape') closeUserMenu();
+    });
+
     document.getElementById('logoutBtn').addEventListener('click', async ()=>{
+      closeUserMenu();
       await sb.auth.signOut();
       showToast(t('signedOut'));
     });
     document.getElementById('deleteAccountBtn').addEventListener('click', async ()=>{
+      closeUserMenu();
       const ok1 = confirm(t('confirmDeleteAccount1'));
       if(!ok1) return;
       const ok2 = confirm(t('confirmDeleteAccount2'));
@@ -2009,7 +2084,7 @@ async function loadRecords(){
   visitedMap = {};
   if(!currentUser) return;
   const { data, error } = await sb.from('place_records').select('*').eq('user_id', currentUser.id);
-  if(error){ console.error(error); return; }
+  if(error){ console.error('loadRecords (place_records) failed: ' + safeErr(error)); return; }
   (data || []).forEach(row=>{
     recordsCache[row.place_id] = row;
     if(row.visited) visitedMap[row.place_id] = new Date(row.visited_at).getTime();
@@ -2021,7 +2096,7 @@ let ratingsCache = {}; // place_id -> {sum, count, mine}
 async function loadRatings(){
   ratingsCache = {};
   const { data, error } = await sb.from('place_ratings').select('place_id,user_id,rating');
-  if(error){ console.error(error); return; }
+  if(error){ console.error('loadRatings (place_ratings) failed: ' + safeErr(error)); return; }
   (data || []).forEach(row=>{
     if(!ratingsCache[row.place_id]) ratingsCache[row.place_id] = {sum:0, count:0, mine:null};
     const r = ratingsCache[row.place_id];
@@ -2100,7 +2175,7 @@ sb.auth.onAuthStateChange(async (event, session)=>{
       openAuthModal('newPassword');
     }
   }catch(err){
-    console.error('onAuthStateChange handler failed', err);
+    console.error('onAuthStateChange handler failed: ' + safeErr(err));
   }
 });
 
@@ -2127,9 +2202,9 @@ async function initApp(){
       if(I18N[browserLang]) initialLang = browserLang;
     }
   }catch(e){}
-  try{ applyLanguage(initialLang); }catch(e){ console.error('applyLanguage failed', e); }
+  try{ applyLanguage(initialLang); }catch(e){ console.error('applyLanguage failed: ' + safeErr(e)); }
 
-  try{ renderAuthArea(); }catch(e){ console.error('renderAuthArea failed', e); }
+  try{ renderAuthArea(); }catch(e){ console.error('renderAuthArea failed: ' + safeErr(e)); }
 
   try{
     const { data: { session } } = await sb.auth.getSession();
@@ -2138,17 +2213,17 @@ async function initApp(){
     await loadRecords();
     await loadRatings();
   }catch(err){
-    console.error('Supabase init failed', err);
+    console.error('Supabase init failed: ' + safeErr(err));
     try{ showToast(t('loadDataFailed'), 'error'); }catch(e){}
   }
 
   try{
     buildMarkers();
   }catch(err){
-    console.error('buildMarkers failed', err);
+    console.error('buildMarkers failed: ' + safeErr(err));
   }
 
-  try{ updateMyPlacesCount(); }catch(e){ console.error('updateMyPlacesCount failed', e); }
+  try{ updateMyPlacesCount(); }catch(e){ console.error('updateMyPlacesCount failed: ' + safeErr(e)); }
 
   // Ať selže cokoliv výše, mapa se MUSÍ zobrazit — loading overlay schováme vždy.
   hideLoadingOverlay();
@@ -2159,12 +2234,12 @@ async function initApp(){
       const place = PLACES.find(p=>p.id===placeId);
       if(place) openPlace(place, true);
     }
-  }catch(e){ console.error('deep link open failed', e); }
+  }catch(e){ console.error('deep link open failed: ' + safeErr(e)); }
 
-  try{ maybeShowOnboarding(); }catch(e){ console.error('onboarding failed', e); }
+  try{ maybeShowOnboarding(); }catch(e){ console.error('onboarding failed: ' + safeErr(e)); }
 }
 initApp().catch(err=>{
-  console.error('initApp failed entirely', err);
+  console.error('initApp failed entirely: ' + safeErr(err));
   hideLoadingOverlay();
 });
 
@@ -2221,9 +2296,6 @@ document.querySelectorAll('.chip').forEach(chip=>{
 document.getElementById('searchInput').addEventListener('input', applyFilters);
 
 /* ---------------- Detail panel ---------------- */
-const panel = document.getElementById('panel');
-const panelEmpty = document.getElementById('panelEmpty');
-const panelContent = document.getElementById('panelContent');
 
 async function openPlace(place, isDeepLink){
   currentPlace = place;
@@ -2457,7 +2529,6 @@ document.getElementById('visitedToggle').addEventListener('click', async ()=>{
 });
 
 /* ---------------- Dashboard "Moje cíle" ---------------- */
-const dashboardOverlay = document.getElementById('dashboardOverlay');
 let dashSortMode = 'recent';
 
 function renderDashboard(){
@@ -2773,11 +2844,6 @@ document.getElementById('onboardCloseBtn').addEventListener('click', ()=>{
 const NOTIFY_RADIUS_M = 400;   // vzdálenost, od které přijde upozornění
 const CLEAR_RADIUS_M = 600;    // musí se vzdálit víc, než se místo může znovu připomenout
 
-let watchId = null;
-let userMarker = null;
-let nearbyIds = new Set();
-let locateActive = false;
-
 function metersBetween(lat1,lng1,lat2,lng2){
   return haversine(lat1,lng1,lat2,lng2) * 1000;
 }
@@ -2960,8 +3026,6 @@ function urlBase64ToUint8Array(base64String){
   return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
 }
 
-const notifBtn = document.getElementById('notifBtn');
-const notifBtnLabel = document.getElementById('notifBtnLabel');
 let pushSubscribed = false;
 
 function updateNotifBtnUI(){
@@ -3003,7 +3067,7 @@ async function subscribeToPush(){
     pushSubscribed = true;
     return sub;
   }catch(err){
-    console.error('Push subscribe failed', err);
+    console.error('Push subscribe failed: ' + safeErr(err));
     return null;
   }
 }
@@ -3015,7 +3079,7 @@ async function sendTestPush(){
     });
     if(error) throw error;
   }catch(err){
-    console.error('Test push failed', err);
+    console.error('Test push failed: ' + safeErr(err));
   }
 }
 
@@ -3050,9 +3114,6 @@ notifBtn.addEventListener('click', async ()=>{
 updateNotifBtnUI();
 
 /* ---------------- Nástroje — rozbalovací menu ---------------- */
-const toolsMenuBtn = document.getElementById('toolsMenuBtn');
-const toolsDropdown = document.getElementById('toolsDropdown');
-const toolsMenuBadge = document.getElementById('toolsMenuBadge');
 
 function updateToolsMenuBadge(){
   let n = 0;
