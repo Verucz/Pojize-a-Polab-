@@ -849,6 +849,18 @@
   @media (max-width:520px){
     #installBanner{flex-wrap:wrap;}
     #installBanner .actions{width:100%;justify-content:flex-end;}
+  
+  #notifBtn {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 9999;
+
+    background: #6b46c1;
+    color: white;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: none;
   }
 </style>
 </head>
@@ -858,6 +870,10 @@
   <div class="spinner"></div>
   <div class="txt">Načítám mapu…</div>
 </div>
+
+<button id="notifBtn">
+  🔔 Notifikace
+</button>
 
 <div id="toastStack"></div>
 
