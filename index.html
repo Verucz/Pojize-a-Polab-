@@ -849,18 +849,6 @@
   @media (max-width:520px){
     #installBanner{flex-wrap:wrap;}
     #installBanner .actions{width:100%;justify-content:flex-end;}
-  
-  #notifBtn {
-    position: fixed;
-    top: 80px;
-    right: 20px;
-    z-index: 9999;
-
-    background: #6b46c1;
-    color: white;
-    padding: 10px 14px;
-    border-radius: 10px;
-    border: none;
   }
 </style>
 </head>
@@ -870,10 +858,6 @@
   <div class="spinner"></div>
   <div class="txt">Načítám mapu…</div>
 </div>
-
-<button id="notifBtn">
-  🔔 Notifikace
-</button>
 
 <div id="toastStack"></div>
 
@@ -942,7 +926,7 @@
     <span id="locateBtnLabel" data-i18n="locateBtn">Sledovat polohu</span>
   </button>
 
-  <button class="notif-btn" id="notifBtn" style="display:flex;">
+  <button class="notif-btn" id="notifBtn" style="display:none;">
     🔔 <span id="notifBtnLabel" data-i18n="notifOff">Notifikace</span>
   </button>
 
@@ -1407,7 +1391,7 @@ const PLACES = [
     desc:'Rozlehlý zábavní park s atrakcemi pro celou rodinu v bývalém vojenském prostoru Milovice.', tags:['rodiny'],
     name_en:'Mirakulum Milovice', desc_en:'An extensive amusement park with attractions for the whole family in the former military area of Milovice.',
     name_de:'Mirakulum Milovice', desc_de:'Ein weitläufiger Freizeitpark mit Attraktionen für die ganze Familie im ehemaligen Militärgebiet Milovice.'},
-  {id:'lazne-podebrady-info', cat:'tourist', name:'Lázně Poděbrady', lat:50.1424, lng:15.1194,
+  {id:'lazne-podebrady-info', cat:'tourist', name:'Lázně Poděbrady', lat:50.1438, lng:15.12,
     desc:'Lázeňské město s léčivými minerálními prameny a kolonádou v srdci lázeňského parku.',
     name_en:'Poděbrady Spa', desc_en:'A spa town with healing mineral springs and a colonnade at the heart of the spa park.',
     name_de:'Kurbad Poděbrady', desc_de:'Eine Kurstadt mit heilenden Mineralquellen und einer Kolonnade im Herzen des Kurparks.'},
@@ -1665,9 +1649,9 @@ const PLACES = [
     desc:'Hotel v bývalém valdštejnském statku v obci Nepřevázka, s tenisovými kurty, bowlingem a vlastní restaurací.', name_en:'Hotel Na Statku', desc_en:'A hotel in a former Wallenstein farmstead in the village of Nepřevázka, with tennis courts, bowling and its own restaurant.', name_de:'Hotel Na Statku', desc_de:'Ein Hotel in einem ehemaligen Wallenstein-Gutshof im Dorf Nepřevázka, mit Tennisplätzen, Bowlingbahn und eigenem Restaurant.'},
   {id:'houstka', cat:'hotel', name:'Hotel Club Houštka', lat:50.1900, lng:14.6650,
     desc:'Hotel v lesoparku Houštka u Staré Boleslavi, v sousedství tenisového areálu.', name_en:'Hotel Club Houštka', desc_en:'A hotel in the Houštka forest park near Stará Boleslav, next to a tennis complex.', name_de:'Hotel Club Houštka', desc_de:'Ein Hotel im Waldpark Houštka bei Stará Boleslav, neben einer Tennisanlage.'},
-  {id:'felicitas', cat:'hotel', name:'Spa Hotel Felicitas', lat:50.1424, lng:15.1194,
+  {id:'felicitas', cat:'hotel', name:'Spa Hotel Felicitas', lat:50.1438, lng:15.1205,
     desc:'Čtyřhvězdičkový lázeňský hotel přímo u kolonády v Poděbradech, s vlastním wellness centrem a restaurací Fine Café.', name_en:'Spa Hotel Felicitas', desc_en:'A four-star spa hotel right by the colonnade in Poděbrady, with its own wellness centre and the Fine Café restaurant.', name_de:'Spa Hotel Felicitas', desc_de:'Ein Viersterne-Kurhotel direkt an der Kolonnade in Poděbrady, mit eigenem Wellnesscenter und dem Restaurant Fine Café.'},
-  {id:'lazne-podebrady', cat:'hotel', name:'Lázně Poděbrady — hotely', lat:50.1420, lng:15.1170,
+  {id:'lazne-podebrady', cat:'hotel', name:'Lázně Poděbrady — hotely', lat:50.1435, lng:15.1195,
     desc:'Léčebné lázně v centru Poděbrad se sítí vlastních hotelů (Libuše, Chariclea a další) a wellness procedurami.', name_en:'Poděbrady Spa — Hotels', desc_en:'A therapeutic spa in the centre of Poděbrady with its own network of hotels (Libuše, Chariclea and others) and wellness treatments.', name_de:'Kurbad Poděbrady — Hotels', desc_de:'Ein Heilbad im Zentrum von Poděbrady mit eigenem Hotelnetz (Libuše, Chariclea u. a.) und Wellnessangeboten.'},
   {id:'famoz-club', cat:'hotel', name:'Famoz club Zvířetice', lat:50.4670, lng:14.9160,
     desc:'Originálně vyzdobený hotel s restaurací pod zříceninou hradu Zvířetice, s vlastní vyhlídkou nad krajem.', name_en:'Famoz Club Zvířetice', desc_en:'A quirkily decorated hotel with a restaurant below the Zvířetice castle ruins, with its own viewpoint over the countryside.', name_de:'Famoz Club Zvířetice', desc_de:'Ein originell dekoriertes Hotel mit Restaurant unterhalb der Burgruine Zvířetice, mit eigener Aussicht über die Landschaft.', url:'https://www.pojizeriapolabi.cz/region/single/931'},
@@ -1683,7 +1667,7 @@ const PLACES = [
     desc:'Ubytování v blízkosti lesa na dosah centra Milovic, s pokoji pro 2–6 osob a možností zážitkových balíčků.', name_en:'Penzion Lesní', desc_en:'Accommodation near the forest within reach of central Milovice, with rooms for 2–6 people and optional experience packages.', name_de:'Penzion Lesní', desc_de:'Unterkunft am Waldrand in Reichweite des Zentrums von Milovice, mit Zimmern für 2–6 Personen und optionalen Erlebnispaketen.', tags:['rodiny']},
   {id:'hrncirsky-dvur', cat:'hotel', name:'Hrnčířský dvůr Zvířetice', lat:50.4720, lng:14.9200,
     desc:'Usedlost s tradiční hrnčířskou výrobou u Bakova nad Jizerou, nabízející ubytování penzionového typu pro pěší i cykloturisty.', name_en:'Hrnčířský dvůr Zvířetice', desc_en:'A farmstead with traditional pottery-making near Bakov nad Jizerou, offering guesthouse-style accommodation for hikers and cyclists.', name_de:'Hrnčířský dvůr Zvířetice', desc_de:'Ein Hof mit traditioneller Töpferei bei Bakov nad Jizerou, mit pensionsartiger Unterkunft für Wanderer und Radfahrer.'},
-  {id:'design-pension-twenty', cat:'hotel', name:'Design Pension Twenty', lat:50.1424, lng:15.1194,
+  {id:'design-pension-twenty', cat:'hotel', name:'Design Pension Twenty', lat:50.143, lng:15.1175,
     desc:'Apartmány v historickém měšťanském domě s moderním interiérem a výhledem na zámek Poděbrady, s kavárnou v přízemí.', name_en:'Design Pension Twenty', desc_en:'Apartments in a historic townhouse with a modern interior and a view of Poděbrady chateau, with a café on the ground floor.', name_de:'Design Pension Twenty', desc_de:'Apartments in einem historischen Bürgerhaus mit modernem Interieur und Blick auf das Schloss Poděbrady, mit Café im Erdgeschoss.'},
   {id:'farma-kosik-tuchom', cat:'hotel', name:'Farma Košík — Penzion Tuchom', lat:50.3265, lng:15.1335,
     desc:'Penzion s útulnou restaurací na okraji bio farmy ve vísce Tuchom, s možností prohlídky farmy a chovu romanovských ovcí.', name_en:'Farma Košík — Penzion Tuchom', desc_en:'A guesthouse with a cosy restaurant on the edge of an organic farm in the hamlet of Tuchom, with the option of touring the farm and its Romanov sheep.', name_de:'Farma Košík — Pension Tuchom', desc_de:'Eine Pension mit gemütlichem Restaurant am Rand eines Biohofs im Weiler Tuchom, mit der Möglichkeit einer Hofbesichtigung und Romanow-Schafen.', tags:['rodiny']},
@@ -1707,17 +1691,17 @@ const PLACES = [
     desc:'Rozlehlý kemp pro stany a karavany přímo u přírodního koupaliště Proboštská jezera s upravenou pláží nedaleko Brandýsa nad Labem-Staré Boleslavi, s kapacitou až 1800 lidí denně.', name_en:'Kemp Proboštská jezera', desc_en:'An extensive campsite for tents and caravans right by the natural swimming lakes of Proboštská jezera with a maintained beach near Brandýs nad Labem-Stará Boleslav, with capacity for up to 1,800 people a day.', name_de:'Camping Proboštská jezera', desc_de:'Ein weitläufiger Campingplatz für Zelte und Wohnwagen direkt an den Proboštská-Naturseen mit gepflegtem Strand bei Brandýs nad Labem-Stará Boleslav, mit Kapazität für bis zu 1.800 Personen pro Tag.', url:'https://www.pojizeriapolabi.cz/region/single/736', tags:['rodiny']},
   {id:'sport-relax-na-kopecku', cat:'hotel', name:'Sport relax hotel Na kopečku', lat:50.4380, lng:14.9280,
     desc:'Sportovně-relaxační hotel v Kosmonosech u Mladé Boleslavi, vhodný pro sportovní soustředění i rodinnou dovolenou.', name_en:'Sport Relax Hotel Na kopečku', desc_en:'A sports and relaxation hotel in Kosmonosy near Mladá Boleslav, suitable for sports training camps and family holidays alike.', name_de:'Sport-Relax-Hotel Na kopečku', desc_de:'Ein Sport- und Wellnesshotel in Kosmonosy bei Mladá Boleslav, geeignet für Sporttrainingslager und Familienurlaub.', url:'https://www.pojizeriapolabi.cz/region/single/619'},
-  {id:'hotel-libuse-podebrady', cat:'hotel', name:'Hotel Libuše', lat:50.1424, lng:15.1194,
+  {id:'hotel-libuse-podebrady', cat:'hotel', name:'Hotel Libuše', lat:50.144, lng:15.12,
     desc:'Lázeňský hotel přímo v centru Poděbrad, součást sítě lázeňských hotelů s wellness a léčebnými procedurami.', name_en:'Hotel Libuše', desc_en:'A spa hotel right in the centre of Poděbrady, part of a network of spa hotels with wellness and therapeutic treatments.', name_de:'Hotel Libuše', desc_de:'Ein Kurhotel direkt im Zentrum von Poděbrady, Teil eines Netzes von Kurhotels mit Wellness- und Heilbehandlungen.', url:'https://www.pojizeriapolabi.cz/region/single/856'},
   {id:'hotel-osvit', cat:'hotel', name:'Hotel Osvit', lat:50.4230, lng:14.8920,
     desc:'Hotel v klidné části Mladé Boleslavi, jen tři minuty od servisního a tréninkového centra Škoda Auto.', name_en:'Hotel Osvit', desc_en:'A hotel in a quiet part of Mladá Boleslav, just three minutes from the Škoda Auto service and training centre.', name_de:'Hotel Osvit', desc_de:'Ein Hotel in einem ruhigen Teil von Mladá Boleslav, nur drei Minuten vom Service- und Trainingszentrum von Škoda Auto entfernt.', url:'https://www.pojizeriapolabi.cz/region/single/847'},
-  {id:'hotel-junior-podebrady', cat:'hotel', name:'Hotel Junior', lat:50.1424, lng:15.1194,
+  {id:'hotel-junior-podebrady', cat:'hotel', name:'Hotel Junior', lat:50.142, lng:15.115,
     desc:'Hotel v Poděbradech s kapacitou 36 pokojů a 103 lůžek, vhodný pro rodiny s dětmi i obchodní jednání, s možností lázeňských pobytů.', name_en:'Hotel Junior', desc_en:'A hotel in Poděbrady with 36 rooms and 103 beds, suitable for families with children as well as business meetings, with spa stay options.', name_de:'Hotel Junior', desc_de:'Ein Hotel in Poděbrady mit 36 Zimmern und 103 Betten, geeignet für Familien mit Kindern und Geschäftstreffen, mit Kuraufenthaltsoptionen.', url:'https://www.pojizeriapolabi.cz/region/single/865', tags:['rodiny']},
-  {id:'hotel-bellevue-tlapak', cat:'hotel', name:'Hotel Bellevue Tlapák', lat:50.1424, lng:15.1194,
+  {id:'hotel-bellevue-tlapak', cat:'hotel', name:'Hotel Bellevue Tlapák', lat:50.1442, lng:15.1208,
     desc:'Funkcionalistický čtyřhvězdičkový hotel přímo na poděbradské lázeňské kolonádě s vyhlídkou na květinové hodiny, s italskou restaurací Pasta & Risotto.', name_en:'Hotel Bellevue Tlapák', desc_en:'A Functionalist four-star hotel right on the Poděbrady spa colonnade with a view of the flower clock, with the Italian restaurant Pasta & Risotto.', name_de:'Hotel Bellevue Tlapák', desc_de:'Ein funktionalistisches Viersterne-Hotel direkt an der Kurkolonnade von Poděbrady mit Blick auf die Blumenuhr, mit dem italienischen Restaurant Pasta & Risotto.', url:'https://www.pojizeriapolabi.cz/region/single/922'},
-  {id:'hotel-libensky', cat:'hotel', name:'Hotel Libenský', lat:50.1424, lng:15.1194,
+  {id:'hotel-libensky', cat:'hotel', name:'Hotel Libenský', lat:50.1441, lng:15.1202,
     desc:'Hlavní lázeňský dům Lázní Poděbrady přímo v centru kolonády naproti proslulým květinovým hodinám, patřící k nejvyhledávanějším hotelům ve městě.', name_en:'Hotel Libenský', desc_en:'The main spa house of the Poděbrady Spa right in the centre of the colonnade opposite the famous flower clock, one of the most sought-after hotels in town.', name_de:'Hotel Libenský', desc_de:'Das Hauptkurhaus des Kurbads Poděbrady direkt im Zentrum der Kolonnade gegenüber der berühmten Blumenuhr, eines der gefragtesten Hotels der Stadt.', url:'https://www.pojizeriapolabi.cz/region/single/787'},
-  {id:'hotel-chariclea', cat:'hotel', name:'Hotel & Spa Chariclea', lat:50.1424, lng:15.1194,
+  {id:'hotel-chariclea', cat:'hotel', name:'Hotel & Spa Chariclea', lat:50.1425, lng:15.119,
     desc:'Lázeňský hotel v Poděbradech s wellness zázemím včetně vnitřního bazénu, sauny a vířivky.', name_en:'Hotel & Spa Chariclea', desc_en:'A spa hotel in Poděbrady with wellness facilities including an indoor pool, sauna and whirlpool.', name_de:'Hotel & Spa Chariclea', desc_de:'Ein Kurhotel in Poděbrady mit Wellnessbereich, Innenpool, Sauna und Whirlpool.', url:'https://www.pojizeriapolabi.cz/region/single/787'},
   {id:'autocamp-skoda', cat:'hotel', name:'Autocamping autoklubu Škoda', lat:50.4400, lng:14.9250,
     desc:'Kemp na okraji Kosmonos při vstupu do Českého ráje, s možností stanování, karavany i dřevěnými chatkami, travnatou plochou stíněnou ovocnými stromy a volejbalovým hřištěm.', name_en:'Autocamping autoklubu Škoda', desc_en:'A campsite on the edge of Kosmonosy at the gateway to the Bohemian Paradise, with tent, caravan and wooden cabin options, a grassy area shaded by fruit trees and a volleyball court.', name_de:'Autocamping des Škoda-Automobilclubs', desc_de:'Ein Campingplatz am Rand von Kosmonosy am Eingang zum Böhmischen Paradies, mit Zelt-, Wohnwagen- und Holzhüttenplätzen, einer von Obstbäumen beschatteten Rasenfläche und Volleyballplatz.', url:'https://www.pojizeriapolabi.cz/region/single/946', tags:['rodiny']},
@@ -1735,7 +1719,7 @@ const PLACES = [
     desc:'Rodinná restaurace s dětským hřištěm a zahradou u Čelákovic.', name_en:'Penzion a restaurace Na Vošverku', desc_en:'A family restaurant with a playground and garden near Čelákovice.', name_de:'Pension und Restaurant Na Vošverku', desc_de:'Ein Familienrestaurant mit Spielplatz und Garten bei Čelákovice.', tags:['rodiny']},
   {id:'hajenka', cat:'restaurant', name:'Hájenka', lat:50.1219, lng:14.8408,
     desc:'Hostinec v Kersku proslulý tím, že sem pravidelně chodíval spisovatel Bohumil Hrabal.', name_en:'Hájenka', desc_en:'An inn in Kersko famous as a regular haunt of writer Bohumil Hrabal.', name_de:'Hájenka', desc_de:'Ein Gasthaus in Kersko, bekannt als Stammlokal des Schriftstellers Bohumil Hrabal.'},
-  {id:'o-mase', cat:'restaurant', name:'O MASE', lat:50.1424, lng:15.1194,
+  {id:'o-mase', cat:'restaurant', name:'O MASE', lat:50.143, lng:15.121,
     desc:'Poděbradská restaurace zaměřená na maso a kvalitní suroviny, s výhledem do lázeňského parku.', name_en:'O MASE', desc_en:'A restaurant in Poděbrady focused on meat and quality ingredients, with a view of the spa park.', name_de:'O MASE', desc_de:'Ein Restaurant in Poděbrady mit Schwerpunkt auf Fleisch und hochwertigen Zutaten, mit Blick auf den Kurpark.'},
   {id:'pizzeria-diverso', cat:'restaurant', name:'Pizzeria Diverso', lat:50.4114, lng:14.9048,
     desc:'Italská restaurace v Mladé Boleslavi s přípravou pizzy v originální kamenné peci na dřevo a širokým výběrem těstovin a salátů.', name_en:'Pizzeria Diverso', desc_en:'An Italian restaurant in Mladá Boleslav making pizza in an original wood-fired stone oven, with a wide choice of pasta and salads.', name_de:'Pizzeria Diverso', desc_de:'Ein italienisches Restaurant in Mladá Boleslav mit Pizza aus dem original holzbefeuerten Steinofen und großer Auswahl an Pasta und Salaten.'},
@@ -1747,11 +1731,11 @@ const PLACES = [
     desc:'Rodinná cukrárna v Kosmonosech od roku 2014, kde se dorty i zákusky připravují tradičním způsobem podle starých receptů.', name_en:'Cukrárna Na Kopečku, Kosmonosy', desc_en:'A family confectionery in Kosmonosy since 2014, where cakes and pastries are made the traditional way using old recipes.', name_de:'Konditorei Na Kopečku, Kosmonosy', desc_de:'Eine Familienkonditorei in Kosmonosy seit 2014, in der Torten und Gebäck traditionell nach alten Rezepten hergestellt werden.', tags:['rodiny']},
   {id:'cukrarna-u-pavoucka', cat:'restaurant', name:'Cukrárna U Pavoučka', lat:50.4660, lng:14.9280,
     desc:'Cukrárna s více než pětadvacetiletou tradicí na náměstí v Bakově nad Jizerou, proslulá vlastní ovocnou a mléčnou zmrzlinou.', name_en:'Cukrárna U Pavoučka', desc_en:'A confectionery with more than 25 years of tradition on the square in Bakov nad Jizerou, famous for its own fruit and dairy ice cream.', name_de:'Konditorei U Pavoučka', desc_de:'Eine Konditorei mit über 25 Jahren Tradition am Platz in Bakov nad Jizerou, bekannt für ihr eigenes Frucht- und Milcheis.', tags:['rodiny']},
-  {id:'cafe-oliver', cat:'restaurant', name:'Café Oliver', lat:50.1424, lng:15.1194,
+  {id:'cafe-oliver', cat:'restaurant', name:'Café Oliver', lat:50.1443, lng:15.1209,
     desc:'Elegantní kavárna přímo u poděbradské kolonády s atmosférou první republiky, výběrovou kávou a výhledem na lázeňský park.', name_en:'Café Oliver', desc_en:'An elegant café right by the Poděbrady colonnade with a First-Republic atmosphere, specialty coffee and a view of the spa park.', name_de:'Café Oliver', desc_de:'Ein elegantes Café direkt an der Kolonnade von Poděbrady mit Atmosphäre der Ersten Republik, Spezialitätenkaffee und Blick auf den Kurpark.'},
   {id:'kavarna-art-deco', cat:'restaurant', name:'Kavárna Art Deco', lat:50.1861, lng:15.0417,
     desc:'Stylová kavárna v centru Nymburka v elegantním art deco interiéru, vhodná na kávu i pracovní schůzku.', name_en:'Kavárna Art Deco', desc_en:'A stylish café in the centre of Nymburk in an elegant Art Deco interior, suitable for coffee as well as business meetings.', name_de:'Café Art Deco', desc_de:'Ein stilvolles Café im Zentrum von Nymburk in elegantem Art-déco-Interieur, geeignet für Kaffee wie auch Geschäftstreffen.', url:'https://www.pojizeriapolabi.cz/region/single/1267'},
-  {id:'kavarna-viola', cat:'restaurant', name:'Kavárna Viola', lat:50.1424, lng:15.1194,
+  {id:'kavarna-viola', cat:'restaurant', name:'Kavárna Viola', lat:50.1437, lng:15.1215,
     desc:'Tradiční lázeňská kavárna v Poděbradech, obnovená v roce 2009, s bohatou nabídkou zákusků a doprovodným kulturním programem.', name_en:'Kavárna Viola', desc_en:'A traditional spa café in Poděbrady, renovated in 2009, with a rich selection of pastries and an accompanying cultural programme.', name_de:'Café Viola', desc_de:'Ein traditionelles Kurcafé in Poděbrady, 2009 renoviert, mit reicher Gebäckauswahl und begleitendem Kulturprogramm.', url:'https://www.pojizeriapolabi.cz/region/single/988'},
   {id:'maka-coffee', cat:'restaurant', name:'MaKa Coffee', lat:50.2019, lng:14.8339,
     desc:'Kavárna a bistro v centru Lysé nad Labem s výběrovou kávou, kterou si zde sami praží, a domácími dorty a snídaněmi.', name_en:'MaKa Coffee', desc_en:'A café and bistro in the centre of Lysá nad Labem with specialty coffee roasted on site, homemade cakes and breakfasts.', name_de:'MaKa Coffee', desc_de:'Ein Café und Bistro im Zentrum von Lysá nad Labem mit vor Ort geröstetem Spezialitätenkaffee, hausgemachten Kuchen und Frühstück.'},
@@ -1769,11 +1753,11 @@ const PLACES = [
     desc:'Restaurace v Mladé Boleslavi se širokým výběrem vín a salonkem pro svatby a firemní akce, součást hotelového komplexu La Romantica.', name_en:'La Romantica Restaurant Mediterranée', desc_en:'A restaurant in Mladá Boleslav with a wide wine selection and a function room for weddings and corporate events, part of the La Romantica hotel complex.', name_de:'La Romantica Restaurant Mediterranée', desc_de:'Ein Restaurant in Mladá Boleslav mit großer Weinauswahl und Festsaal für Hochzeiten und Firmenevents, Teil des Hotelkomplexes La Romantica.'},
   {id:'bistro-waiwari', cat:'restaurant', name:'Bistro Waiwari', lat:50.4110, lng:14.9040,
     desc:'Thajské bistro v Mladé Boleslavi s autentickou kuchyní připravovanou rodilými kuchaři — Tom Kha, Pad Thai a další klasiky.', name_en:'Bistro Waiwari', desc_en:'A Thai bistro in Mladá Boleslav with authentic cuisine prepared by native cooks — Tom Kha, Pad Thai and other classics.', name_de:'Bistro Waiwari', desc_de:'Ein Thai-Bistro in Mladá Boleslav mit authentischer Küche, zubereitet von einheimischen Köchen — Tom Kha, Pad Thai und weitere Klassiker.', url:'https://www.pojizeriapolabi.cz/region/single/1261'},
-  {id:'par-soust', cat:'restaurant', name:'Pár Soust', lat:50.1424, lng:15.1194,
+  {id:'par-soust', cat:'restaurant', name:'Pár Soust', lat:50.1445, lng:15.1165,
     desc:'Moderní bistro na Riegrově náměstí v Poděbradech, proslulé šťavnatým grilovaným kuřetem a důrazem na čerstvé lokální suroviny.', name_en:'Pár Soust', desc_en:'A modern bistro on Riegrovo Square in Poděbrady, famous for juicy grilled chicken and an emphasis on fresh local ingredients.', name_de:'Pár Soust', desc_de:'Ein modernes Bistro am Riegrovo-Platz in Poděbrady, bekannt für saftiges gegrilltes Hähnchen und frische regionale Zutaten.', url:'https://www.pojizeriapolabi.cz/region/single/1003'},
   {id:'americka-pod-vezi', cat:'restaurant', name:'America "Pod Věží"', lat:50.4118, lng:14.9040,
     desc:'Restaurace s americkou BBQ kuchyní v Mladé Boleslavi — burgery, steaky a bifteky v nekuřáckém prostředí se dvěma salonky.', name_en:'America "Pod Věží"', desc_en:'A restaurant with American BBQ cuisine in Mladá Boleslav — burgers, steaks and beefsteaks in a non-smoking setting with two function rooms.', name_de:'America „Pod Věží"', desc_de:'Ein Restaurant mit amerikanischer BBQ-Küche in Mladá Boleslav — Burger, Steaks und Beefsteaks in Nichtraucherambiente mit zwei Salons.'},
-  {id:'na-kovarne', cat:'restaurant', name:'Divadelní restaurace Na Kovárně', lat:50.1424, lng:15.1194,
+  {id:'na-kovarne', cat:'restaurant', name:'Divadelní restaurace Na Kovárně', lat:50.1433, lng:15.1178,
     desc:'Restaurace na Jiřího náměstí v Poděbradech přímo pod stejnojmenným divadlem s více než 70letou tradicí.', name_en:'Divadelní restaurace Na Kovárně', desc_en:'A restaurant on Jiřího Square in Poděbrady, right beneath the theatre of the same name, with more than 70 years of tradition.', name_de:'Theaterrestaurant Na Kovárně', desc_de:'Ein Restaurant am Jiřího-Platz in Poděbrady, direkt unter dem gleichnamigen Theater, mit über 70 Jahren Tradition.', url:'https://www.pojizeriapolabi.cz/region/single/979'},
   {id:'bens-burger', cat:'restaurant', name:"Ben's Burger", lat:50.2909, lng:14.8226,
     desc:'Stylové burgerové bistro v centru Benátek nad Jizerou, které staví na čerstvých surovinách a poctivém mase.', name_en:'Ben\'s Burger', desc_en:'A stylish burger bistro in the centre of Benátky nad Jizerou, built on fresh ingredients and honest meat.', name_de:'Ben\'s Burger', desc_de:'Ein stilvolles Burger-Bistro im Zentrum von Benátky nad Jizerou, das auf frische Zutaten und ehrliches Fleisch setzt.'},
@@ -2099,27 +2083,35 @@ async function loadRecords(){
   recordsCache = {};
   visitedMap = {};
   if(!currentUser) return;
-  const { data, error } = await sb.from('place_records').select('*').eq('user_id', currentUser.id);
-  if(error){ console.error('loadRecords (place_records) failed: ' + safeErr(error)); return; }
-  (data || []).forEach(row=>{
-    recordsCache[row.place_id] = row;
-    if(row.visited) visitedMap[row.place_id] = new Date(row.visited_at).getTime();
-  });
+  try{
+    const { data, error } = await sb.from('place_records').select('*').eq('user_id', currentUser.id);
+    if(error){ console.warn('loadRecords (place_records) skipped: ' + safeErr(error)); return; }
+    (data || []).forEach(row=>{
+      recordsCache[row.place_id] = row;
+      if(row.visited) visitedMap[row.place_id] = new Date(row.visited_at).getTime();
+    });
+  }catch(err){
+    console.warn('loadRecords (place_records) skipped: ' + safeErr(err));
+  }
 }
 
 let ratingsCache = {}; // place_id -> {sum, count, mine}
 
 async function loadRatings(){
   ratingsCache = {};
-  const { data, error } = await sb.from('place_ratings').select('place_id,user_id,rating');
-  if(error){ console.error('loadRatings (place_ratings) failed: ' + safeErr(error)); return; }
-  (data || []).forEach(row=>{
-    if(!ratingsCache[row.place_id]) ratingsCache[row.place_id] = {sum:0, count:0, mine:null};
-    const r = ratingsCache[row.place_id];
-    r.sum += row.rating;
-    r.count += 1;
-    if(currentUser && row.user_id === currentUser.id) r.mine = row.rating;
-  });
+  try{
+    const { data, error } = await sb.from('place_ratings').select('place_id,user_id,rating');
+    if(error){ console.warn('loadRatings (place_ratings) skipped: ' + safeErr(error)); return; }
+    (data || []).forEach(row=>{
+      if(!ratingsCache[row.place_id]) ratingsCache[row.place_id] = {sum:0, count:0, mine:null};
+      const r = ratingsCache[row.place_id];
+      r.sum += row.rating;
+      r.count += 1;
+      if(currentUser && row.user_id === currentUser.id) r.mine = row.rating;
+    });
+  }catch(err){
+    console.warn('loadRatings (place_ratings) skipped: ' + safeErr(err));
+  }
 }
 
 function renderRating(place){
@@ -3049,45 +3041,42 @@ function updateNotifBtnUI(){
     notifBtn.style.display = 'none';
     return;
   }
-  
   notifBtn.style.display = 'flex';
+  // Na iPhonu fungují notifikace jen v appce přidané na plochu — tlačítko necháváme
+  // vidět (ať je appka objevitelná), ale po kliknutí to jasně vysvětlíme.
+  if(isIOS() && !isStandalone()){
+    notifBtn.classList.remove('active');
+    notifBtnLabel.textContent = t('notifOff');
+    notifBtnLabel.removeAttribute('data-i18n');
+    return;
+  }
   const granted = Notification.permission === 'granted';
   notifBtn.classList.toggle('active', granted);
   notifBtnLabel.textContent = granted ? t('notifOn') : t('notifOff');
   notifBtnLabel.removeAttribute('data-i18n');
 }
 
-
 async function subscribeToPush(){
   if(!currentUser) return null;
-
   try{
     const reg = await navigator.serviceWorker.ready;
     let sub = await reg.pushManager.getSubscription();
-
     if(!sub){
       sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
       });
     }
-
     const json = sub.toJSON();
-
-    const { error } = await sb
-      .from('push_subscriptions')
-      .upsert({
-        user_id: currentUser.id,
-        endpoint: json.endpoint,
-        p256dh: json.keys.p256dh,
-        auth: json.keys.auth
-      }, { onConflict: 'endpoint' });
-
+    const { error } = await sb.from('push_subscriptions').upsert({
+      user_id: currentUser.id,
+      endpoint: json.endpoint,
+      p256dh: json.keys.p256dh,
+      auth: json.keys.auth
+    }, { onConflict: 'endpoint' });
     if(error) throw error;
-
     pushSubscribed = true;
     return sub;
-
   }catch(err){
     console.error('Push subscribe failed: ' + safeErr(err));
     return null;
@@ -3108,6 +3097,10 @@ async function sendTestPush(){
 notifBtn.addEventListener('click', async ()=>{
   if(!('Notification' in window) || !('PushManager' in window)){
     showToast(t('notifUnsupported'), 'error');
+    return;
+  }
+  if(isIOS() && !isStandalone()){
+    showToast(t('iosInstallHint'), null);
     return;
   }
   if(!requireAuth()) return;
@@ -3133,7 +3126,7 @@ notifBtn.addEventListener('click', async ()=>{
   }
 });
 
-window.addEventListener('load', updateNotifBtnUI);
+updateNotifBtnUI();
 
 /* ---------------- Nástroje — rozbalovací menu ---------------- */
 
@@ -3173,9 +3166,14 @@ document.addEventListener('keydown', (e)=>{
   if(e.key === 'Escape') closeToolsMenu();
 });
 
-// odznak aktualizujeme i při akcích, které se odehrávají uvnitř menu
-toolsDropdown.addEventListener('click', ()=>{
-  setTimeout(updateToolsMenuBadge, 50);
+// odznak aktualizujeme i menu zavřeme po výběru libovolné akce uvnitř
+toolsDropdown.addEventListener('click', (e)=>{
+  if(e.target.closest('button')){
+    setTimeout(()=>{
+      updateToolsMenuBadge();
+      closeToolsMenu();
+    }, 120);
+  }
 });
 </script>
 </body>
