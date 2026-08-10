@@ -926,7 +926,7 @@
     <span id="locateBtnLabel" data-i18n="locateBtn">Sledovat polohu</span>
   </button>
 
-  <button class="notif-btn" id="notifBtn" style="display:none;">
+  <button class="notif-btn" id="notifBtn" style="display:flex;">
     🔔 <span id="notifBtnLabel" data-i18n="notifOff">Notifikace</span>
   </button>
 
@@ -3033,11 +3033,7 @@ function updateNotifBtnUI(){
     notifBtn.style.display = 'none';
     return;
   }
-  // Na iPhonu fungují notifikace jen v appce přidané na plochu (standalone) — v běžném Safari tabu je nezobrazujeme
-  if(isIOS() && !isStandalone()){
-    notifBtn.style.display = 'none';
-    return;
-  }
+  
   notifBtn.style.display = 'flex';
   const granted = Notification.permission === 'granted';
   notifBtn.classList.toggle('active', granted);
@@ -3045,27 +3041,37 @@ function updateNotifBtnUI(){
   notifBtnLabel.removeAttribute('data-i18n');
 }
 
+
 async function subscribeToPush(){
   if(!currentUser) return null;
+
   try{
     const reg = await navigator.serviceWorker.ready;
     let sub = await reg.pushManager.getSubscription();
+
     if(!sub){
       sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
       });
     }
+
     const json = sub.toJSON();
-    const { error } = await sb.from('push_subscriptions').upsert({
-      user_id: currentUser.id,
-      endpoint: json.endpoint,
-      p256dh: json.keys.p256dh,
-      auth: json.keys.auth
-    }, { onConflict: 'endpoint' });
+
+    const { error } = await sb
+      .from('push_subscriptions')
+      .upsert({
+        user_id: currentUser.id,
+        endpoint: json.endpoint,
+        p256dh: json.keys.p256dh,
+        auth: json.keys.auth
+      }, { onConflict: 'endpoint' });
+
     if(error) throw error;
+
     pushSubscribed = true;
     return sub;
+
   }catch(err){
     console.error('Push subscribe failed: ' + safeErr(err));
     return null;
