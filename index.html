@@ -565,14 +565,25 @@
   .trip-stops{display:flex;gap:8px;flex-wrap:wrap;flex:1;min-width:200px;}
   .trip-stop-chip{
     display:flex;align-items:center;gap:6px;
-    background:var(--paper);border-radius:100px;padding:5px 6px 5px 12px;
+    background:var(--paper);border-radius:100px;padding:5px 6px 5px 6px;
     font-size:12px;font-weight:600;color:var(--ink);
+    transition:opacity .15s ease, transform .15s ease;
   }
+  .trip-stop-chip.dragging{
+    opacity:0.5;
+    box-shadow:0 4px 12px rgba(0,0,0,0.2);
+  }
+  .trip-stop-chip .drag-handle{
+    display:flex;align-items:center;justify-content:center;
+    width:18px;height:18px;flex-shrink:0;color:var(--ink-soft);
+    cursor:grab;touch-action:none;font-size:12px;user-select:none;
+  }
+  .trip-stop-chip .drag-handle:active{cursor:grabbing;}
   .trip-stop-chip .n{
     width:18px;height:18px;border-radius:50%;background:var(--teal);color:var(--white);
     display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;
   }
-  .trip-stop-chip button{
+  .trip-stop-chip button.remove{
     width:18px;height:18px;border-radius:50%;border:none;background:var(--paper-dark);
     cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;
   }
@@ -1037,7 +1048,8 @@
   <div class="trip-bar-actions">
     <button class="trip-btn ghost" id="tripClearBtn">Vymazat</button>
     <button class="trip-btn ghost" id="tripCloseBtn">Ukončit</button>
-    <button class="trip-btn primary" id="tripOpenMapsBtn">Otevřít v Google Maps ↗</button>
+    <button class="trip-btn primary" id="tripShowRouteBtn">🗺️ Zobrazit trasu</button>
+    <button class="trip-btn ghost" id="tripOpenMapsBtn">Otevřít v Google Maps ↗</button>
   </div>
 </div>
 
@@ -1403,7 +1415,7 @@ const PLACES = [
     desc:'Nové přístaviště na Labi s lodí Sv. Václav, která nabízí plavby mezi Starou Boleslaví a Čelákovicemi — lze kombinovat s cyklovýletem podél řeky.',
     name_en:'Stará Boleslav Landing Stage', desc_en:'A new landing stage on the Elbe with the boat "Sv. Václav", offering cruises between Stará Boleslav and Čelákovice — can be combined with a cycling trip along the river.',
     name_de:'Anlegestelle Stará Boleslav', desc_de:'Eine neue Anlegestelle an der Elbe mit dem Schiff „Sv. Václav", das Fahrten zwischen Stará Boleslav und Čelákovice anbietet — kombinierbar mit einer Radtour entlang des Flusses.'},
-  {id:'tic-milovice', cat:'tourist', name:'Turistické informační centrum Milovice', lat:50.2144, lng:14.8850,
+  {id:'tic-milovice', cat:'tourist', name:'Turistické informační centrum Milovice', lat:50.2166, lng:14.885,
     desc:'Infocentrum na náměstí 30. června v Milovicích s prodejem suvenýrů, dobíjením elektrokol a přehledem dopravních spojů.', url:'https://www.pojizeriapolabi.cz/region/single/751',
     name_en:'Milovice Tourist Information Centre', desc_en:'An information centre on 30. června Square in Milovice, selling souvenirs, offering e-bike charging and public transport information.',
     name_de:'Touristeninformation Milovice', desc_de:'Ein Informationszentrum am Platz 30. června in Milovice mit Souvenirverkauf, E-Bike-Ladestation und Verkehrsauskünften.'},
@@ -1423,11 +1435,11 @@ const PLACES = [
     desc:'Rozlehlá 566hektarová obora s populací daňků, kterou od konce 19. století krátce obývala i exotická zvířata jako bizoni či plameňáci. Okolo rybníků vede přibližně tříkilometrová naučná Smetanova stezka.', url:'https://www.pojizeriapolabi.cz/region/single/409',
     name_en:'Jabkenice Deer Park', desc_en:'An extensive 566-hectare deer park, briefly home from the late 19th century to exotic animals such as bison and flamingos. A roughly three-kilometre Smetana nature trail runs around the ponds.',
     name_de:'Wildgehege Jabkenice', desc_de:'Ein weitläufiges, 566 Hektar großes Wildgehege, in dem ab dem späten 19. Jahrhundert kurzzeitig auch exotische Tiere wie Bisons und Flamingos lebten. Rund um die Teiche führt der etwa drei Kilometer lange Smetana-Lehrpfad.'},
-  {id:'zamecky-park-lysa', cat:'tourist', name:'Zámecký park Lysá nad Labem', lat:50.20190, lng:14.83390,
+  {id:'zamecky-park-lysa', cat:'tourist', name:'Zámecký park Lysá nad Labem', lat:50.2041, lng:14.8339,
     desc:'Zámecký park tvořený francouzským libosadem a anglickým parkem, zdobený sochařskou výzdobou z dílen M. B. Brauna, v jedinečném panoramatu se zámkem a kostelem sv. Jana Křtitele.',
     name_en:'Lysá nad Labem Chateau Park', desc_en:'A chateau park combining a French formal garden and an English landscape park, adorned with sculptures from the Braun workshop, in a unique setting with the chateau and the Church of St John the Baptist.',
     name_de:'Schlosspark Lysá nad Labem', desc_de:'Ein Schlosspark aus französischem Lustgarten und englischem Landschaftspark, geschmückt mit Skulpturen aus der Braun-Werkstatt, in einzigartiger Kulisse mit Schloss und Johannes-der-Täufer-Kirche.'},
-  {id:'metalova-cesta-mb', cat:'tourist', name:'Metalová cesta Mladou Boleslaví', lat:50.41180, lng:14.90400,
+  {id:'metalova-cesta-mb', cat:'tourist', name:'Metalová cesta Mladou Boleslaví', lat:50.414, lng:14.904,
     desc:'Čtyřkilometrová naučná stezka s dvanácti originálními kovanými panely od Davida Szalaye, ukazující, že Mladá Boleslav je víc než jen „město automobilů".', tags:['rodiny'],
     name_en:'Metal Trail Through Mladá Boleslav', desc_en:'A four-kilometre nature trail with twelve original wrought-iron panels by David Szalay, showing that Mladá Boleslav is more than just a "car town".',
     name_de:'Metallpfad durch Mladá Boleslav', desc_de:'Ein vier Kilometer langer Lehrpfad mit zwölf originalen schmiedeeisernen Tafeln von David Szalay, der zeigt, dass Mladá Boleslav mehr ist als nur eine „Autostadt".'},
@@ -1435,7 +1447,7 @@ const PLACES = [
     desc:'Park na ostrově s asfaltovou cyklostezkou oblíbenou i mezi in-line bruslaři, navazující na Tyršovy sady se zázemím pro letní sporty.',
     name_en:'English Park on the Island, Nymburk', desc_en:'A park on an island with a paved cycle path popular with inline skaters too, connecting to Tyršovy sady park with facilities for summer sports.',
     name_de:'Englischer Park auf der Insel, Nymburk', desc_de:'Ein Park auf einer Insel mit einem asphaltierten Radweg, der auch bei Inlineskatern beliebt ist, anschließend an den Tyršovy-sady-Park mit Angeboten für Sommersport.'},
-  {id:'tic-mlada-boleslav', cat:'tourist', name:'Turistické informační centrum Mladá Boleslav', lat:50.41180, lng:14.90400,
+  {id:'tic-mlada-boleslav', cat:'tourist', name:'Turistické informační centrum Mladá Boleslav', lat:50.4107, lng:14.90667,
     desc:'Infocentrum kousek od historického jádra města s mapami, vstupenkami i interaktivními prvky pro děti, včetně klouzačky ve tvaru Michalovické putny.', tags:['rodiny'],
     name_en:'Mladá Boleslav Tourist Information Centre', desc_en:'An information centre just steps from the historic town centre, offering maps, tickets and interactive features for children, including a slide shaped like a Michalovice tub.',
     name_de:'Touristeninformation Mladá Boleslav', desc_de:'Ein Informationszentrum nur wenige Schritte vom historischen Stadtkern entfernt, mit Karten, Eintrittskarten und interaktiven Elementen für Kinder, darunter eine Rutsche in Form einer Michalovice-Wanne.'},
@@ -1447,7 +1459,7 @@ const PLACES = [
     desc:'Pozůstatky raně středověkého hradiště rodu Slavníkovců z 9.–10. století, chráněné jako národní kulturní památka.',
     name_en:'Slavník Stronghold, Libice nad Cidlinou', desc_en:'Remains of an early medieval stronghold of the Slavník dynasty from the 9th–10th century, protected as a national cultural monument.',
     name_de:'Slavnikiden-Burgstätte Libice nad Cidlinou', desc_de:'Überreste einer frühmittelalterlichen Burgstätte der Slavnikiden-Dynastie aus dem 9.–10. Jahrhundert, geschützt als nationales Kulturdenkmal.'},
-  {id:'tic-nymburk', cat:'tourist', name:'Turistické informační centrum Nymburk', lat:50.1861, lng:15.0417,
+  {id:'tic-nymburk', cat:'tourist', name:'Turistické informační centrum Nymburk', lat:50.1883, lng:15.0417,
     desc:'Infocentrum na náměstí Přemyslovců nabízející objednané prohlídky města zaměřené na historii a osobnosti spjaté s Nymburkem, včetně Bohumila Hrabala.', url:'https://www.pojizeriapolabi.cz/region/single/754',
     name_en:'Nymburk Tourist Information Centre', desc_en:'An information centre on Přemyslovců Square offering pre-booked town tours focused on the history and personalities linked to Nymburk, including Bohumil Hrabal.',
     name_de:'Touristeninformation Nymburk', desc_de:'Ein Informationszentrum am Přemyslovců-Platz mit buchbaren Stadtführungen zur Geschichte und zu Persönlichkeiten Nymburks, darunter Bohumil Hrabal.'},
@@ -1455,7 +1467,7 @@ const PLACES = [
     desc:'Infocentrum v Arnoldinovském domě na náměstí, sídlící společně s Oblastním muzeem Praha-Východ, výchozí bod pro poznávání Brandýsa nad Labem-Staré Boleslavi.', url:'https://www.pojizeriapolabi.cz/region/single/763',
     name_en:'Brandýs nad Labem Tourist Information Centre', desc_en:'An information centre in the Arnoldino House on the square, sharing premises with the Prague-East Regional Museum, a starting point for exploring Brandýs nad Labem-Stará Boleslav.',
     name_de:'Touristeninformation Brandýs nad Labem', desc_de:'Ein Informationszentrum im Arnoldino-Haus am Platz, zusammen mit dem Regionalmuseum Prag-Ost untergebracht, Ausgangspunkt zur Erkundung von Brandýs nad Labem-Stará Boleslav.'},
-  {id:'hradby-nymburk', cat:'tourist', name:'Středověké hradby Nymburk', lat:50.18611, lng:15.04167,
+  {id:'hradby-nymburk', cat:'tourist', name:'Středověké hradby Nymburk', lat:50.18831, lng:15.04167,
     desc:'Jeden z nejkvalitnějších příkladů středověkého městského opevnění v Čechách, budovaný od konce 13. století za vlády Václava II., s dochovanými věžemi a částí vodních příkopů.',
     name_en:'Nymburk Medieval Town Walls', desc_en:'One of the finest examples of medieval town fortifications in Bohemia, built from the late 13th century under the reign of Wenceslas II, with preserved towers and part of the moat.',
     name_de:'Mittelalterliche Stadtmauern Nymburk', desc_de:'Eines der besten Beispiele mittelalterlicher Stadtbefestigung in Böhmen, errichtet ab dem späten 13. Jahrhundert unter Wenzel II., mit erhaltenen Türmen und Teilen des Wassergrabens.'},
@@ -1485,7 +1497,7 @@ const PLACES = [
     desc:'Muzejní areál v bývalém hospodářském dvoře v Dobrovici, zapsaném v seznamu nemovitých kulturních památek, součástí je i zámek.',
     name_en:'Dobrovice Museums', desc_en:'A museum complex in a former farmstead in Dobrovice, listed as a protected cultural monument, which also includes a chateau.',
     name_de:'Museen von Dobrovice', desc_de:'Ein Museumskomplex in einem ehemaligen Wirtschaftshof in Dobrovice, der als Kulturdenkmal geschützt ist und auch ein Schloss umfasst.'},
-  {id:'film-legends-podebrady', cat:'museum', name:'Film Legends Museum Poděbrady', lat:50.14100, lng:15.11900,
+  {id:'film-legends-podebrady', cat:'museum', name:'Film Legends Museum Poděbrady', lat:50.1432, lng:15.119,
     desc:'Sběratelská expozice soch, figurín a replik nejslavnějších filmových a komiksových hrdinů, součást sbírky Johnnyho Wolfa.',
     name_en:'Film Legends Museum Poděbrady', desc_en:'A collector\'s exhibition of statues, figures and replicas of the most famous film and comic-book heroes, part of Johnny Wolf\'s collection.',
     name_de:'Film Legends Museum Poděbrady', desc_de:'Eine Sammlerausstellung mit Statuen, Figuren und Repliken der berühmtesten Film- und Comichelden, Teil der Sammlung von Johnny Wolf.'},
@@ -1493,15 +1505,15 @@ const PLACES = [
     desc:'Muzeum založené roku 1903, sídlící v čelákovické tvrzi, s přírodovědnými, archeologickými a historickými sbírkami středního Polabí.',
     name_en:'Čelákovice Town Museum', desc_en:'A museum founded in 1903, housed in the Čelákovice fortress, with natural-history, archaeological and historical collections from the central Elbe region.',
     name_de:'Stadtmuseum Čelákovice', desc_de:'Ein 1903 gegründetes Museum in der Feste Čelákovice mit naturkundlichen, archäologischen und historischen Sammlungen aus dem mittleren Elberaum.'},
-  {id:'kolejiste-nymburk', cat:'museum', name:'Modelové kolejiště Nymburk', lat:50.18611, lng:15.04167,
+  {id:'kolejiste-nymburk', cat:'museum', name:'Modelové kolejiště Nymburk', lat:50.18391, lng:15.04167,
     desc:'Rozsáhlé modelové kolejiště v Nymburce s několika nádražími, desítkami výhybek a stovkami metrů kolejí.', tags:['rodiny'],
     name_en:'Nymburk Model Railway', desc_en:'An extensive model railway in Nymburk with several stations, dozens of switches and hundreds of metres of track.',
     name_de:'Modelleisenbahn Nymburk', desc_de:'Eine umfangreiche Modelleisenbahn in Nymburk mit mehreren Bahnhöfen, Dutzenden Weichen und Hunderten Metern Gleis.'},
-  {id:'muzeum-vojensky-prostor-milovice', cat:'museum', name:'Muzeum vojenského prostoru Milovice', lat:50.21440, lng:14.88500,
+  {id:'muzeum-vojensky-prostor-milovice', cat:'museum', name:'Muzeum vojenského prostoru Milovice', lat:50.2144, lng:14.88808,
     desc:'Expozice vojenské techniky, uniforem a fotografií přibližující historii bývalého Vojenského újezdu Mladá od roku 1904 do roku 1991.',
     name_en:'Milovice Military Area Museum', desc_en:'An exhibition of military equipment, uniforms and photographs presenting the history of the former Mladá Military District from 1904 to 1991.',
     name_de:'Museum des Militärgebiets Milovice', desc_de:'Eine Ausstellung von Militärtechnik, Uniformen und Fotografien zur Geschichte des ehemaligen Militärbezirks Mladá von 1904 bis 1991.'},
-  {id:'museum-of-bricks-podebrady', cat:'museum', name:'Museum of Bricks Poděbrady', lat:50.14100, lng:15.11900,
+  {id:'museum-of-bricks-podebrady', cat:'museum', name:'Museum of Bricks Poděbrady', lat:50.1388, lng:15.119,
     desc:'Přes tisíc modelů postavených z kostiček LEGO, včetně replik místních staveb jako Jiřího náměstí v Poděbradech.', tags:['rodiny'],
     name_en:'Museum of Bricks Poděbrady', desc_en:'Over a thousand models built from LEGO bricks, including replicas of local landmarks such as Jiřího Square in Poděbrady.',
     name_de:'Museum of Bricks Poděbrady', desc_de:'Über tausend Modelle aus LEGO-Steinen, darunter Nachbildungen örtlicher Bauwerke wie des Jiřího-Platzes in Poděbrady.'},
@@ -1523,7 +1535,7 @@ const PLACES = [
     desc:'Sklářská huť v Poděbradech navazující na tradici výroby broušeného křišťálu založenou v roce 1877, dnes jeden z předních světových výrobců olovnatého křišťálu.',
     name_en:'Crystal BOHEMIA Glassworks', desc_en:'A glassworks in Poděbrady continuing a cut-crystal tradition founded in 1877, today one of the world\'s leading producers of lead crystal.',
     name_de:'Glashütte Crystal BOHEMIA', desc_de:'Eine Glashütte in Poděbrady, die eine 1877 begründete Tradition der Kristallschliffkunst fortführt und heute zu den weltweit führenden Bleikristallherstellern zählt.'},
-  {id:'pivovar-nymburk', cat:'architecture', name:'Pivovar Nymburk (Postřižinský)', lat:50.1861, lng:15.0417,
+  {id:'pivovar-nymburk', cat:'architecture', name:'Pivovar Nymburk (Postřižinský)', lat:50.18678, lng:15.04463,
     desc:'Historický pivovar založený roku 1895, jehož první várka se uvařila v březnu 1898 — místo úzce spjaté se spisovatelem Bohumilem Hrabalem a jeho rodným městem.', url:'https://www.pojizeriapolabi.cz/region/single/1198',
     name_en:'Nymburk Brewery (Postřižinský)', desc_en:'A historic brewery founded in 1895, whose first batch was brewed in March 1898 — a place closely tied to writer Bohumil Hrabal and his home town.',
     name_de:'Brauerei Nymburk (Postřižinský)', desc_de:'Eine 1895 gegründete historische Brauerei, deren erstes Bier im März 1898 gebraut wurde — eng verbunden mit dem Schriftsteller Bohumil Hrabal und seiner Heimatstadt.'},
@@ -1589,7 +1601,7 @@ const PLACES = [
     desc:'Golfové hřiště na okraji Mladé Boleslavi s odpalištěm i cvičnými plochami pro hráče všech úrovní.',
     name_en:'Golf Mladá Boleslav', desc_en:'A golf course on the edge of Mladá Boleslav with a driving range and practice areas for players of all levels.',
     name_de:'Golf Mladá Boleslav', desc_de:'Ein Golfplatz am Rande von Mladá Boleslav mit Abschlagbereich und Übungsflächen für Spieler aller Niveaus.'},
-  {id:'golf-galatea', cat:'sport', name:'Golfové odpaliště — Hotel Galatea', lat:50.44416, lng:14.92271,
+  {id:'golf-galatea', cat:'sport', name:'Golfové odpaliště — Hotel Galatea', lat:50.44636, lng:14.92271,
     desc:'Golfové odpaliště při hotelu Galatea u Mladé Boleslavi, vhodné i pro začátečníky.',
     name_en:'Golf Driving Range — Hotel Galatea', desc_en:'A golf driving range at the Hotel Galatea near Mladá Boleslav, suitable for beginners too.',
     name_de:'Golf-Abschlagplatz — Hotel Galatea', desc_de:'Ein Golf-Abschlagplatz beim Hotel Galatea bei Mladá Boleslav, auch für Anfänger geeignet.'},
@@ -1609,11 +1621,11 @@ const PLACES = [
     desc:'Celoročně klimatizované sportoviště v Sadské nabízející pod jednou střechou bowling, squash, sálový fotbal, minigolf i petanque, s dětským koutkem a saunou.', url:'https://www.pojizeriapolabi.cz/region/single/1330', tags:['rodiny'],
     name_en:'Bowling Squash Sadská', desc_en:'A year-round air-conditioned sports facility in Sadská offering bowling, squash, indoor football, mini-golf and pétanque under one roof, with a kids\' corner and sauna.',
     name_de:'Bowling Squash Sadská', desc_de:'Eine ganzjährig klimatisierte Sportanlage in Sadská mit Bowling, Squash, Hallenfußball, Minigolf und Pétanque unter einem Dach, mit Kinderecke und Sauna.'},
-  {id:'inline-mb', cat:'sport', name:'In-line dráha — Městský stadion Mladá Boleslav', lat:50.42688, lng:14.91588,
+  {id:'inline-mb', cat:'sport', name:'In-line dráha — Městský stadion Mladá Boleslav', lat:50.42908, lng:14.91588,
     desc:'Veřejná in-line dráha při městském stadionu v Mladé Boleslavi, oblíbená k bruslení i běhu.',
     name_en:'Inline Skating Track — Mladá Boleslav Municipal Stadium', desc_en:'A public inline skating track at the municipal stadium in Mladá Boleslav, popular for skating and running.',
     name_de:'Inline-Bahn — Städtisches Stadion Mladá Boleslav', desc_de:'Eine öffentliche Inline-Skate-Bahn am städtischen Stadion in Mladá Boleslav, beliebt zum Skaten und Laufen.'},
-  {id:'lokotrans-arena', cat:'sport', name:'Lokotrans Aréna', lat:50.42688, lng:14.91588,
+  {id:'lokotrans-arena', cat:'sport', name:'Lokotrans Aréna', lat:50.42578, lng:14.91855,
     desc:'Fotbalový stadion FK Mladá Boleslav s kapacitou přes 5 000 diváků, domácí hřiště klubu hrajícího nejvyšší českou ligu.',
     name_en:'Lokotrans Arena', desc_en:'The football stadium of FK Mladá Boleslav with capacity for over 5,000 spectators, home ground of a club playing in the top Czech league.',
     name_de:'Lokotrans Arena', desc_de:'Das Fußballstadion von FK Mladá Boleslav mit über 5.000 Plätzen, Heimspielstätte eines Vereins der höchsten tschechischen Liga.'},
@@ -1637,7 +1649,7 @@ const PLACES = [
     desc:'Koupaliště nabízející vyžití pro všechny věkové skupiny, jak ve vodě, tak na souši.', tags:['rodiny'],
     name_en:'Mladá Boleslav Municipal Swimming Pool', desc_en:'An outdoor pool offering activities for all age groups, both in and out of the water.',
     name_de:'Städtisches Freibad Mladá Boleslav', desc_de:'Ein Freibad mit Angeboten für alle Altersgruppen, im und außerhalb des Wassers.'},
-  {id:'volnocasovy-areal-bakov', cat:'sport', name:'Volnočasový areál Bakov nad Jizerou', lat:50.46600, lng:14.92800,
+  {id:'volnocasovy-areal-bakov', cat:'sport', name:'Volnočasový areál Bakov nad Jizerou', lat:50.4682, lng:14.928,
     desc:'Areál otevřený v roce 2010, zahrnující koupaliště a další sportovní a rekreační vyžití v Bakově nad Jizerou.', tags:['rodiny'],
     name_en:'Bakov nad Jizerou Leisure Complex', desc_en:'A complex opened in 2010, including a swimming pool and other sports and recreational facilities in Bakov nad Jizerou.',
     name_de:'Freizeitareal Bakov nad Jizerou', desc_de:'Ein 2010 eröffnetes Areal mit Freibad und weiteren Sport- und Freizeitangeboten in Bakov nad Jizerou.'},
@@ -1659,11 +1671,11 @@ const PLACES = [
     desc:'Penzion u Mladé Boleslavi s klimatizovanými pokoji, zahradou a bezplatným Wi-Fi, dříve známý jako Penzion Sportrelax.', name_en:'Penzion Solid Spa', desc_en:'A guesthouse near Mladá Boleslav with air-conditioned rooms, a garden and free Wi-Fi, formerly known as Penzion Sportrelax.', name_de:'Pension Solid Spa', desc_de:'Eine Pension bei Mladá Boleslav mit klimatisierten Zimmern, Garten und kostenlosem WLAN, früher bekannt als Penzion Sportrelax.'},
   {id:'bucicky-mlyn', cat:'hotel', name:'Bučický mlýn', lat:50.2900, lng:15.1500,
     desc:'Romantický penzion a restaurace v areálu rožďalovického mlýna na hrázi Bučického rybníka, asi 22 km od Nymburka.', name_en:'Bučický mlýn', desc_en:'A romantic guesthouse and restaurant at the Rožďalovice mill on the dam of the Bučice pond, about 22 km from Nymburk.', name_de:'Bučický mlýn', desc_de:'Eine romantische Pension mit Restaurant in der Mühle von Rožďalovice am Damm des Bučice-Teichs, etwa 22 km von Nymburk entfernt.'},
-  {id:'penzion-duo', cat:'hotel', name:'Penzion Duo', lat:50.4380, lng:14.9280,
+  {id:'penzion-duo', cat:'hotel', name:'Penzion Duo', lat:50.4402, lng:14.928,
     desc:'Penzion v Kosmonosech u Mladé Boleslavi, vhodný pro služební cesty i rekreaci, nedaleko barokní Lorety.', name_en:'Penzion Duo', desc_en:'A guesthouse in Kosmonosy near Mladá Boleslav, suitable for business trips and holidays alike, close to the Baroque Loreta.', name_de:'Penzion Duo', desc_de:'Eine Pension in Kosmonosy bei Mladá Boleslav, geeignet für Geschäftsreisen und Urlaub, nahe der barocken Loreta.', url:'https://www.pojizeriapolabi.cz/region/single/679'},
   {id:'penzion-krajni-mez', cat:'hotel', name:'Penzion Krajní mez', lat:50.4230, lng:14.9200,
     desc:'Penzion v okrajové čtvrti Mladé Boleslavi u přírodní památky Radouč, s nekuřáckou restaurací.', name_en:'Penzion Krajní mez', desc_en:'A guesthouse on the outskirts of Mladá Boleslav near the Radouč nature monument, with a non-smoking restaurant.', name_de:'Penzion Krajní mez', desc_de:'Eine Pension am Stadtrand von Mladá Boleslav beim Naturdenkmal Radouč, mit Nichtraucherrestaurant.', url:'https://www.pojizeriapolabi.cz/region/single/1258'},
-  {id:'penzion-lesni', cat:'hotel', name:'Penzion Lesní', lat:50.2144, lng:14.8850,
+  {id:'penzion-lesni', cat:'hotel', name:'Penzion Lesní', lat:50.2122, lng:14.885,
     desc:'Ubytování v blízkosti lesa na dosah centra Milovic, s pokoji pro 2–6 osob a možností zážitkových balíčků.', name_en:'Penzion Lesní', desc_en:'Accommodation near the forest within reach of central Milovice, with rooms for 2–6 people and optional experience packages.', name_de:'Penzion Lesní', desc_de:'Unterkunft am Waldrand in Reichweite des Zentrums von Milovice, mit Zimmern für 2–6 Personen und optionalen Erlebnispaketen.', tags:['rodiny']},
   {id:'hrncirsky-dvur', cat:'hotel', name:'Hrnčířský dvůr Zvířetice', lat:50.4720, lng:14.9200,
     desc:'Usedlost s tradiční hrnčířskou výrobou u Bakova nad Jizerou, nabízející ubytování penzionového typu pro pěší i cykloturisty.', name_en:'Hrnčířský dvůr Zvířetice', desc_en:'A farmstead with traditional pottery-making near Bakov nad Jizerou, offering guesthouse-style accommodation for hikers and cyclists.', name_de:'Hrnčířský dvůr Zvířetice', desc_de:'Ein Hof mit traditioneller Töpferei bei Bakov nad Jizerou, mit pensionsartiger Unterkunft für Wanderer und Radfahrer.'},
@@ -1679,7 +1691,7 @@ const PLACES = [
     desc:'Rodinný penzion v klidné části Mladé Boleslavi nedaleko Škoda Auto, s vlastní zahradou a snídaní v ceně, vhodný pro rodiny s dětmi.', name_en:'JD Penzion', desc_en:'A family guesthouse in a quiet part of Mladá Boleslav near Škoda Auto, with its own garden and breakfast included, suitable for families with children.', name_de:'JD Pension', desc_de:'Eine Familienpension in einem ruhigen Teil von Mladá Boleslav bei Škoda Auto, mit eigenem Garten und Frühstück inklusive, geeignet für Familien mit Kindern.', url:'https://www.pojizeriapolabi.cz/region/single/742', tags:['rodiny']},
   {id:'brandysky-dvur', cat:'hotel', name:'Rodinný hotel Brandýský Dvůr', lat:50.18700, lng:14.66500,
     desc:'Hotel na břehu Labe v Brandýse nad Labem, přímo u trasy Labské cyklostezky, s kapacitou pro větší skupiny i firemní akce.', name_en:'Rodinný hotel Brandýský Dvůr', desc_en:'A hotel on the banks of the Elbe in Brandýs nad Labem, right on the Elbe cycle route, with capacity for larger groups and corporate events.', name_de:'Familienhotel Brandýský Dvůr', desc_de:'Ein Hotel am Elbufer in Brandýs nad Labem, direkt am Elberadweg, mit Kapazität für größere Gruppen und Firmenevents.'},
-  {id:'hotel-galatea', cat:'hotel', name:'Hotel Galatea', lat:50.44416, lng:14.92271,
+  {id:'hotel-galatea', cat:'hotel', name:'Hotel Galatea', lat:50.44306, lng:14.92538,
     desc:'Hotel s vlastním wellness centrem otevřeným i pro veřejnost, součást golfového areálu u Mladé Boleslavi.', name_en:'Hotel Galatea', desc_en:'A hotel with its own wellness centre open to the public too, part of a golf complex near Mladá Boleslav.', name_de:'Hotel Galatea', desc_de:'Ein Hotel mit eigenem Wellnesscenter, das auch für die Öffentlichkeit zugänglich ist, Teil eines Golfareals bei Mladá Boleslav.'},
   {id:'hotel-sand-martin', cat:'hotel', name:'Hotel Sand Martin', lat:50.43600, lng:14.88100,
     desc:'Čtyřhvězdičkový hotel v golfovém resortu v Mladé Boleslavi-Michalovicích, s pokoji s výhledem na hřiště, wellness a bazénem se slanou vodou.', name_en:'Hotel Sand Martin', desc_en:'A four-star hotel in a golf resort in Mladá Boleslav-Michalovice, with rooms overlooking the course, wellness and a saltwater pool.', name_de:'Hotel Sand Martin', desc_de:'Ein Viersterne-Hotel im Golfresort in Mladá Boleslav-Michalovice, mit Zimmern mit Blick auf den Platz, Wellness und Salzwasserpool.', url:'https://www.pojizeriapolabi.cz/region/single/841'},
@@ -1689,7 +1701,7 @@ const PLACES = [
     desc:'Ubytování v bungalovech pro 7 osob v borovicovém lese u břehu Labe, v romantické krajině spjaté s Bohumilem Hrabalem.', name_en:'Bungalovy Kersko', desc_en:'Bungalow accommodation for 7 people in a pine forest on the banks of the Elbe, in countryside associated with Bohumil Hrabal.', name_de:'Bungalows Kersko', desc_de:'Bungalow-Unterkünfte für 7 Personen in einem Kiefernwald am Elbufer, in einer mit Bohumil Hrabal verbundenen Landschaft.', tags:['rodiny']},
   {id:'kemp-probostska-jezera', cat:'hotel', name:'Kemp Proboštská jezera', lat:50.19550, lng:14.68450,
     desc:'Rozlehlý kemp pro stany a karavany přímo u přírodního koupaliště Proboštská jezera s upravenou pláží nedaleko Brandýsa nad Labem-Staré Boleslavi, s kapacitou až 1800 lidí denně.', name_en:'Kemp Proboštská jezera', desc_en:'An extensive campsite for tents and caravans right by the natural swimming lakes of Proboštská jezera with a maintained beach near Brandýs nad Labem-Stará Boleslav, with capacity for up to 1,800 people a day.', name_de:'Camping Proboštská jezera', desc_de:'Ein weitläufiger Campingplatz für Zelte und Wohnwagen direkt an den Proboštská-Naturseen mit gepflegtem Strand bei Brandýs nad Labem-Stará Boleslav, mit Kapazität für bis zu 1.800 Personen pro Tag.', url:'https://www.pojizeriapolabi.cz/region/single/736', tags:['rodiny']},
-  {id:'sport-relax-na-kopecku', cat:'hotel', name:'Sport relax hotel Na kopečku', lat:50.4380, lng:14.9280,
+  {id:'sport-relax-na-kopecku', cat:'hotel', name:'Sport relax hotel Na kopečku', lat:50.4369, lng:14.93067,
     desc:'Sportovně-relaxační hotel v Kosmonosech u Mladé Boleslavi, vhodný pro sportovní soustředění i rodinnou dovolenou.', name_en:'Sport Relax Hotel Na kopečku', desc_en:'A sports and relaxation hotel in Kosmonosy near Mladá Boleslav, suitable for sports training camps and family holidays alike.', name_de:'Sport-Relax-Hotel Na kopečku', desc_de:'Ein Sport- und Wellnesshotel in Kosmonosy bei Mladá Boleslav, geeignet für Sporttrainingslager und Familienurlaub.', url:'https://www.pojizeriapolabi.cz/region/single/619'},
   {id:'hotel-libuse-podebrady', cat:'hotel', name:'Hotel Libuše', lat:50.144, lng:15.12,
     desc:'Lázeňský hotel přímo v centru Poděbrad, součást sítě lázeňských hotelů s wellness a léčebnými procedurami.', name_en:'Hotel Libuše', desc_en:'A spa hotel right in the centre of Poděbrady, part of a network of spa hotels with wellness and therapeutic treatments.', name_de:'Hotel Libuše', desc_de:'Ein Kurhotel direkt im Zentrum von Poděbrady, Teil eines Netzes von Kurhotels mit Wellness- und Heilbehandlungen.', url:'https://www.pojizeriapolabi.cz/region/single/856'},
@@ -1723,21 +1735,21 @@ const PLACES = [
     desc:'Poděbradská restaurace zaměřená na maso a kvalitní suroviny, s výhledem do lázeňského parku.', name_en:'O MASE', desc_en:'A restaurant in Poděbrady focused on meat and quality ingredients, with a view of the spa park.', name_de:'O MASE', desc_de:'Ein Restaurant in Poděbrady mit Schwerpunkt auf Fleisch und hochwertigen Zutaten, mit Blick auf den Kurpark.'},
   {id:'pizzeria-diverso', cat:'restaurant', name:'Pizzeria Diverso', lat:50.4114, lng:14.9048,
     desc:'Italská restaurace v Mladé Boleslavi s přípravou pizzy v originální kamenné peci na dřevo a širokým výběrem těstovin a salátů.', name_en:'Pizzeria Diverso', desc_en:'An Italian restaurant in Mladá Boleslav making pizza in an original wood-fired stone oven, with a wide choice of pasta and salads.', name_de:'Pizzeria Diverso', desc_de:'Ein italienisches Restaurant in Mladá Boleslav mit Pizza aus dem original holzbefeuerten Steinofen und großer Auswahl an Pasta und Salaten.'},
-  {id:'u-janka', cat:'restaurant', name:'Restaurace U Janka', lat:50.4090, lng:14.9070,
+  {id:'u-janka', cat:'restaurant', name:'Restaurace U Janka', lat:50.4112, lng:14.907,
     desc:'Stylová restaurace s poctivým domácím jídlem a pivnicí, doplněná klidnou zahrádkou k posezení i grilování.', name_en:'Restaurace U Janka', desc_en:'A stylish restaurant with honest home cooking and a pub, plus a quiet garden for sitting and grilling.', name_de:'Restaurace U Janka', desc_de:'Ein stilvolles Restaurant mit ehrlicher Hausmannskost und Wirtshaus, mit ruhigem Garten zum Sitzen und Grillen.'},
-  {id:'cukrarna-na-kopecku-mb', cat:'restaurant', name:'Cukrárna Na Kopečku', lat:50.4110, lng:14.9040,
+  {id:'cukrarna-na-kopecku-mb', cat:'restaurant', name:'Cukrárna Na Kopečku', lat:50.4132, lng:14.904,
     desc:'Cukrárna v centru Mladé Boleslavi navazující na tradici vyhlášené cukrárny z minulosti, s vlastní výrobou zákusků i zmrzliny.', name_en:'Cukrárna Na Kopečku', desc_en:'A confectionery in the centre of Mladá Boleslav continuing the tradition of a renowned confectionery of the past, with its own cakes and ice cream.', name_de:'Konditorei Na Kopečku', desc_de:'Eine Konditorei im Zentrum von Mladá Boleslav in der Tradition einer bekannten Konditorei früherer Zeiten, mit eigener Herstellung von Kuchen und Eis.', tags:['rodiny']},
-  {id:'cukrarna-na-kopecku-kosmonosy', cat:'restaurant', name:'Cukrárna Na Kopečku, Kosmonosy', lat:50.4380, lng:14.9280,
+  {id:'cukrarna-na-kopecku-kosmonosy', cat:'restaurant', name:'Cukrárna Na Kopečku, Kosmonosy', lat:50.4369, lng:14.92533,
     desc:'Rodinná cukrárna v Kosmonosech od roku 2014, kde se dorty i zákusky připravují tradičním způsobem podle starých receptů.', name_en:'Cukrárna Na Kopečku, Kosmonosy', desc_en:'A family confectionery in Kosmonosy since 2014, where cakes and pastries are made the traditional way using old recipes.', name_de:'Konditorei Na Kopečku, Kosmonosy', desc_de:'Eine Familienkonditorei in Kosmonosy seit 2014, in der Torten und Gebäck traditionell nach alten Rezepten hergestellt werden.', tags:['rodiny']},
-  {id:'cukrarna-u-pavoucka', cat:'restaurant', name:'Cukrárna U Pavoučka', lat:50.4660, lng:14.9280,
+  {id:'cukrarna-u-pavoucka', cat:'restaurant', name:'Cukrárna U Pavoučka', lat:50.4638, lng:14.928,
     desc:'Cukrárna s více než pětadvacetiletou tradicí na náměstí v Bakově nad Jizerou, proslulá vlastní ovocnou a mléčnou zmrzlinou.', name_en:'Cukrárna U Pavoučka', desc_en:'A confectionery with more than 25 years of tradition on the square in Bakov nad Jizerou, famous for its own fruit and dairy ice cream.', name_de:'Konditorei U Pavoučka', desc_de:'Eine Konditorei mit über 25 Jahren Tradition am Platz in Bakov nad Jizerou, bekannt für ihr eigenes Frucht- und Milcheis.', tags:['rodiny']},
   {id:'cafe-oliver', cat:'restaurant', name:'Café Oliver', lat:50.1443, lng:15.1209,
     desc:'Elegantní kavárna přímo u poděbradské kolonády s atmosférou první republiky, výběrovou kávou a výhledem na lázeňský park.', name_en:'Café Oliver', desc_en:'An elegant café right by the Poděbrady colonnade with a First-Republic atmosphere, specialty coffee and a view of the spa park.', name_de:'Café Oliver', desc_de:'Ein elegantes Café direkt an der Kolonnade von Poděbrady mit Atmosphäre der Ersten Republik, Spezialitätenkaffee und Blick auf den Kurpark.'},
-  {id:'kavarna-art-deco', cat:'restaurant', name:'Kavárna Art Deco', lat:50.1861, lng:15.0417,
+  {id:'kavarna-art-deco', cat:'restaurant', name:'Kavárna Art Deco', lat:50.18432, lng:15.04351,
     desc:'Stylová kavárna v centru Nymburka v elegantním art deco interiéru, vhodná na kávu i pracovní schůzku.', name_en:'Kavárna Art Deco', desc_en:'A stylish café in the centre of Nymburk in an elegant Art Deco interior, suitable for coffee as well as business meetings.', name_de:'Café Art Deco', desc_de:'Ein stilvolles Café im Zentrum von Nymburk in elegantem Art-déco-Interieur, geeignet für Kaffee wie auch Geschäftstreffen.', url:'https://www.pojizeriapolabi.cz/region/single/1267'},
   {id:'kavarna-viola', cat:'restaurant', name:'Kavárna Viola', lat:50.1437, lng:15.1215,
     desc:'Tradiční lázeňská kavárna v Poděbradech, obnovená v roce 2009, s bohatou nabídkou zákusků a doprovodným kulturním programem.', name_en:'Kavárna Viola', desc_en:'A traditional spa café in Poděbrady, renovated in 2009, with a rich selection of pastries and an accompanying cultural programme.', name_de:'Café Viola', desc_de:'Ein traditionelles Kurcafé in Poděbrady, 2009 renoviert, mit reicher Gebäckauswahl und begleitendem Kulturprogramm.', url:'https://www.pojizeriapolabi.cz/region/single/988'},
-  {id:'maka-coffee', cat:'restaurant', name:'MaKa Coffee', lat:50.2019, lng:14.8339,
+  {id:'maka-coffee', cat:'restaurant', name:'MaKa Coffee', lat:50.2019, lng:14.83698,
     desc:'Kavárna a bistro v centru Lysé nad Labem s výběrovou kávou, kterou si zde sami praží, a domácími dorty a snídaněmi.', name_en:'MaKa Coffee', desc_en:'A café and bistro in the centre of Lysá nad Labem with specialty coffee roasted on site, homemade cakes and breakfasts.', name_de:'MaKa Coffee', desc_de:'Ein Café und Bistro im Zentrum von Lysá nad Labem mit vor Ort geröstetem Spezialitätenkaffee, hausgemachten Kuchen und Frühstück.'},
   {id:'cafe-ritual', cat:'restaurant', name:'Café Ritual', lat:50.1418, lng:15.1200,
     desc:'Kavárna a bistro v srdci Poděbrad se snídaněmi z lokálních surovin, čerstvými dorty a vlastní pečenou kávou Cafe Reserva.', name_en:'Café Ritual', desc_en:'A café and bistro in the heart of Poděbrady with breakfasts made from local ingredients, fresh cakes and its own roasted Cafe Reserva coffee.', name_de:'Café Ritual', desc_de:'Ein Café und Bistro im Herzen von Poděbrady mit Frühstück aus regionalen Zutaten, frischen Kuchen und eigenem Röstkaffee Cafe Reserva.'},
@@ -1745,35 +1757,50 @@ const PLACES = [
     desc:'Rodinná cukrárna na Jiřího náměstí v Poděbradech s tradicí od roku 1938, proslulá ručně vyráběnou zmrzlinou až v 60 příchutích.', name_en:'Cukrárna U Reinvaldů', desc_en:'A family confectionery on Jiřího Square in Poděbrady with a tradition dating back to 1938, famous for handmade ice cream in up to 60 flavours.', name_de:'Konditorei U Reinvaldů', desc_de:'Eine Familienkonditorei am Jiřího-Platz in Poděbrady mit Tradition seit 1938, bekannt für handgemachtes Eis in bis zu 60 Sorten.', tags:['rodiny']},
   {id:'cukrarna-na-miraku', cat:'restaurant', name:'Cukrárna a kavárna Na Míráku', lat:50.4106, lng:14.9036,
     desc:'Moderní cukrárna a kavárna na náměstí Míru v Mladé Boleslavi s dětským koutkem a nabídkou veganských i bezlepkových dezertů.', name_en:'Cukrárna a kavárna Na Míráku', desc_en:'A modern confectionery and café on Míru Square in Mladá Boleslav with a children\'s corner and a selection of vegan and gluten-free desserts.', name_de:'Konditorei und Café Na Míráku', desc_de:'Eine moderne Konditorei und Café am Míru-Platz in Mladá Boleslav mit Kinderecke und veganen sowie glutenfreien Desserts.', url:'https://www.pojizeriapolabi.cz/region/single/1318', tags:['rodiny']},
-  {id:'daniels-burger', cat:'restaurant', name:"Daniel's Burger", lat:50.2019, lng:14.8339,
+  {id:'daniels-burger', cat:'restaurant', name:"Daniel's Burger", lat:50.1997, lng:14.8339,
     desc:'Neformální restaurace na náměstí v Lysé nad Labem s burgery, tortillami a pizzou z čerstvých surovin, i s rozvozem po okolí.', name_en:'Daniel\'s Burger', desc_en:'An informal restaurant on the square in Lysá nad Labem with burgers, tortillas and pizza made from fresh ingredients, plus local delivery.', name_de:'Daniel\'s Burger', desc_de:'Ein zwangloses Restaurant am Platz in Lysá nad Labem mit Burgern, Tortillas und Pizza aus frischen Zutaten, auch mit Lieferservice.'},
-  {id:'stanice-nymburk', cat:'restaurant', name:'Stanice Nymburk', lat:50.1861, lng:15.0417,
+  {id:'stanice-nymburk', cat:'restaurant', name:'Stanice Nymburk', lat:50.18432, lng:15.03989,
     desc:'Moderní kavárna přímo na nymburském vlakovém nádraží, ideální na zpříjemnění čekání na vlak.', name_en:'Stanice Nymburk', desc_en:'A modern café right at the Nymburk train station, ideal for making a wait for the train more pleasant.', name_de:'Stanice Nymburk', desc_de:'Ein modernes Café direkt am Bahnhof Nymburk, ideal, um die Wartezeit auf den Zug angenehmer zu gestalten.'},
   {id:'la-romantica-restaurant', cat:'restaurant', name:'La Romantica Restaurant Mediterranée', lat:50.40700, lng:14.90800,
     desc:'Restaurace v Mladé Boleslavi se širokým výběrem vín a salonkem pro svatby a firemní akce, součást hotelového komplexu La Romantica.', name_en:'La Romantica Restaurant Mediterranée', desc_en:'A restaurant in Mladá Boleslav with a wide wine selection and a function room for weddings and corporate events, part of the La Romantica hotel complex.', name_de:'La Romantica Restaurant Mediterranée', desc_de:'Ein Restaurant in Mladá Boleslav mit großer Weinauswahl und Festsaal für Hochzeiten und Firmenevents, Teil des Hotelkomplexes La Romantica.'},
-  {id:'bistro-waiwari', cat:'restaurant', name:'Bistro Waiwari', lat:50.4110, lng:14.9040,
+  {id:'bistro-waiwari', cat:'restaurant', name:'Bistro Waiwari', lat:50.4099, lng:14.90667,
     desc:'Thajské bistro v Mladé Boleslavi s autentickou kuchyní připravovanou rodilými kuchaři — Tom Kha, Pad Thai a další klasiky.', name_en:'Bistro Waiwari', desc_en:'A Thai bistro in Mladá Boleslav with authentic cuisine prepared by native cooks — Tom Kha, Pad Thai and other classics.', name_de:'Bistro Waiwari', desc_de:'Ein Thai-Bistro in Mladá Boleslav mit authentischer Küche, zubereitet von einheimischen Köchen — Tom Kha, Pad Thai und weitere Klassiker.', url:'https://www.pojizeriapolabi.cz/region/single/1261'},
   {id:'par-soust', cat:'restaurant', name:'Pár Soust', lat:50.1445, lng:15.1165,
     desc:'Moderní bistro na Riegrově náměstí v Poděbradech, proslulé šťavnatým grilovaným kuřetem a důrazem na čerstvé lokální suroviny.', name_en:'Pár Soust', desc_en:'A modern bistro on Riegrovo Square in Poděbrady, famous for juicy grilled chicken and an emphasis on fresh local ingredients.', name_de:'Pár Soust', desc_de:'Ein modernes Bistro am Riegrovo-Platz in Poděbrady, bekannt für saftiges gegrilltes Hähnchen und frische regionale Zutaten.', url:'https://www.pojizeriapolabi.cz/region/single/1003'},
-  {id:'americka-pod-vezi', cat:'restaurant', name:'America "Pod Věží"', lat:50.4118, lng:14.9040,
+  {id:'americka-pod-vezi', cat:'restaurant', name:'America "Pod Věží"', lat:50.4107, lng:14.90133,
     desc:'Restaurace s americkou BBQ kuchyní v Mladé Boleslavi — burgery, steaky a bifteky v nekuřáckém prostředí se dvěma salonky.', name_en:'America "Pod Věží"', desc_en:'A restaurant with American BBQ cuisine in Mladá Boleslav — burgers, steaks and beefsteaks in a non-smoking setting with two function rooms.', name_de:'America „Pod Věží"', desc_de:'Ein Restaurant mit amerikanischer BBQ-Küche in Mladá Boleslav — Burger, Steaks und Beefsteaks in Nichtraucherambiente mit zwei Salons.'},
   {id:'na-kovarne', cat:'restaurant', name:'Divadelní restaurace Na Kovárně', lat:50.1433, lng:15.1178,
     desc:'Restaurace na Jiřího náměstí v Poděbradech přímo pod stejnojmenným divadlem s více než 70letou tradicí.', name_en:'Divadelní restaurace Na Kovárně', desc_en:'A restaurant on Jiřího Square in Poděbrady, right beneath the theatre of the same name, with more than 70 years of tradition.', name_de:'Theaterrestaurant Na Kovárně', desc_de:'Ein Restaurant am Jiřího-Platz in Poděbrady, direkt unter dem gleichnamigen Theater, mit über 70 Jahren Tradition.', url:'https://www.pojizeriapolabi.cz/region/single/979'},
+  {id:'nas-hostinec', cat:'restaurant', name:'Náš hostinec', lat:50.14100, lng:15.11450,
+    desc:'Hostinec v Tyršově ulici v Poděbradech spojující bistro, restauraci i cukrárnu pod jednou střechou.',
+    name_en:'Náš hostinec', desc_en:'An inn on Tyršova Street in Poděbrady combining a bistro, restaurant and confectionery under one roof.',
+    name_de:'Náš hostinec', desc_de:'Ein Gasthaus in der Tyršova-Straße in Poděbrady, das Bistro, Restaurant und Konditorei unter einem Dach vereint.',
+    url:'https://www.pojizeriapolabi.cz/region/single/994'},
+  {id:'restaurant-no10', cat:'restaurant', name:'Restaurant NO. 10', lat:50.41150, lng:14.90450,
+    desc:'Originální podnik na třídě T. G. Masaryka v Mladé Boleslavi pod vedením šéfkuchaře Lubomíra Šorma, s pestrým výběrem jídel z celého světa.',
+    name_en:'Restaurant NO. 10', desc_en:'An original venue on Třída T. G. Masaryka in Mladá Boleslav led by chef Lubomír Šorm, with a varied selection of dishes from around the world.',
+    name_de:'Restaurant NO. 10', desc_de:'Ein originelles Lokal an der Straße T. G. Masaryka in Mladá Boleslav unter der Leitung von Chefkoch Lubomír Šorm, mit vielfältigen Gerichten aus aller Welt.',
+    url:'https://www.pojizeriapolabi.cz/region/single/1102'},
+  {id:'cafe-vaclav', cat:'restaurant', name:'Café/restaurant VÁCLAV', lat:50.41420, lng:14.91140,
+    desc:'Moderní kavárna a restaurace přímo v budově Škoda Muzea v Mladé Boleslavi, obklopená historickým okolím.',
+    name_en:'Café/restaurant VÁCLAV', desc_en:'A modern café and restaurant right inside the Škoda Museum building in Mladá Boleslav, surrounded by historic surroundings.',
+    name_de:'Café/Restaurant VÁCLAV', desc_de:'Ein modernes Café und Restaurant direkt im Gebäude des Škoda Museums in Mladá Boleslav, umgeben von historischer Umgebung.',
+    url:'https://www.pojizeriapolabi.cz/region/single/1342'},
   {id:'bens-burger', cat:'restaurant', name:"Ben's Burger", lat:50.2909, lng:14.8226,
     desc:'Stylové burgerové bistro v centru Benátek nad Jizerou, které staví na čerstvých surovinách a poctivém mase.', name_en:'Ben\'s Burger', desc_en:'A stylish burger bistro in the centre of Benátky nad Jizerou, built on fresh ingredients and honest meat.', name_de:'Ben\'s Burger', desc_de:'Ein stilvolles Burger-Bistro im Zentrum von Benátky nad Jizerou, das auf frische Zutaten und ehrliches Fleisch setzt.'},
-  {id:'u-gregoru', cat:'restaurant', name:'Restaurace U Gregorů (Géčko)', lat:50.1861, lng:15.0417,
+  {id:'u-gregoru', cat:'restaurant', name:'Restaurace U Gregorů (Géčko)', lat:50.18678, lng:15.03877,
     desc:'Tradiční pivnice v historickém centru Nymburka v domě z přestavby roku 1885, dlouho spjatá s čepováním Budějovického Budvaru a společenským životem města.', name_en:'Restaurace U Gregorů (Géčko)', desc_en:'A traditional pub in the historic centre of Nymburk in a building rebuilt in 1885, long associated with pouring Budějovický Budvar and the town\'s social life.', name_de:'Restaurace U Gregorů (Géčko)', desc_de:'Ein traditionelles Wirtshaus im historischen Zentrum von Nymburk in einem 1885 umgebauten Haus, seit langem verbunden mit Budweiser Budvar und dem gesellschaftlichen Leben der Stadt.', url:'https://www.pojizeriapolabi.cz/region/single/1123'},
-  {id:'restaurace-start', cat:'restaurant', name:'Restaurace Start', lat:50.42688, lng:14.91588,
+  {id:'restaurace-start', cat:'restaurant', name:'Restaurace Start', lat:50.42578, lng:14.91321,
     desc:'Restaurace u městského stadionu v Mladé Boleslavi, oblíbená zastávka před sportovním utkáním i po něm.', name_en:'Restaurace Start', desc_en:'A restaurant by the municipal stadium in Mladá Boleslav, a popular stop before and after sporting events.', name_de:'Restaurace Start', desc_de:'Ein Restaurant beim städtischen Stadion in Mladá Boleslav, ein beliebter Halt vor und nach Sportveranstaltungen.', url:'https://www.pojizeriapolabi.cz/region/single/1129'},
-  {id:'restaurace-galatea', cat:'restaurant', name:'Restaurace Hotel Galatea', lat:50.44416, lng:14.92271,
+  {id:'restaurace-galatea', cat:'restaurant', name:'Restaurace Hotel Galatea', lat:50.44306, lng:14.92004,
     desc:'Restaurace hotelu Galatea u Mladé Boleslavi, součást golfového areálu s výhledem do okolní krajiny.', name_en:'Restaurace Hotel Galatea', desc_en:'The restaurant of the Hotel Galatea near Mladá Boleslav, part of a golf complex with views over the surrounding countryside.', name_de:'Restaurant Hotel Galatea', desc_de:'Das Restaurant des Hotels Galatea bei Mladá Boleslav, Teil eines Golfareals mit Blick über die umliegende Landschaft.', url:'https://www.pojizeriapolabi.cz/region/single/1159'},
-  {id:'clock-cafe-milovice', cat:'restaurant', name:'Clock Café Milovice', lat:50.2144, lng:14.8850,
+  {id:'clock-cafe-milovice', cat:'restaurant', name:'Clock Café Milovice', lat:50.2144, lng:14.88192,
     desc:'Příjemná kavárna v centru Milovic se širokým výběrem dortíků, zákusků a domácích limonád.', name_en:'Clock Café Milovice', desc_en:'A pleasant café in the centre of Milovice with a wide selection of cakes, pastries and homemade lemonades.', name_de:'Clock Café Milovice', desc_de:'Ein gemütliches Café im Zentrum von Milovice mit großer Auswahl an Torten, Gebäck und hausgemachten Limonaden.', url:'https://www.pojizeriapolabi.cz/region/single/1321'},
-  {id:'matylda-pizzeria', cat:'restaurant', name:'Matylda pizzeria', lat:50.2019, lng:14.8339,
+  {id:'matylda-pizzeria', cat:'restaurant', name:'Matylda pizzeria', lat:50.2019, lng:14.83082,
     desc:'Pizzerie na Masarykově ulici v Lysé nad Labem.', name_en:'Matylda pizzeria', desc_en:'A pizzeria on Masarykova Street in Lysá nad Labem.', name_de:'Pizzeria Matylda', desc_de:'Eine Pizzeria in der Masarykova-Straße in Lysá nad Labem.', url:'https://www.pojizeriapolabi.cz/region/single/1237'},
-  {id:'jihoceska-hostenice', cat:'restaurant', name:'Jihočeská hostěnice', lat:50.4090, lng:14.9070,
+  {id:'jihoceska-hostenice', cat:'restaurant', name:'Jihočeská hostěnice', lat:50.4068, lng:14.907,
     desc:'Restaurace na Staroměstském náměstí v Mladé Boleslavi s letní zahrádkou pro 50–60 hostů a chutným denním menu ve všední dny.', name_en:'Jihočeská hostěnice', desc_en:'A restaurant on Staroměstské Square in Mladá Boleslav with a summer garden for 50–60 guests and a tasty daily menu on weekdays.', name_de:'Jihočeská hostěnice', desc_de:'Ein Restaurant am Staroměstské-Platz in Mladá Boleslav mit Sommergarten für 50–60 Gäste und einem schmackhaften Tagesmenü an Wochentagen.', url:'https://www.pojizeriapolabi.cz/region/single/1270'},
-  {id:'embe-pivovar', cat:'restaurant', name:'eMBe pivovar a restaurace', lat:50.4110, lng:14.9040,
+  {id:'embe-pivovar', cat:'restaurant', name:'eMBe pivovar a restaurace', lat:50.4099, lng:14.90133,
     desc:'Restaurace s vlastním minipivovarem v Mladé Boleslavi.', name_en:'eMBe pivovar a restaurace', desc_en:'A restaurant with its own microbrewery in Mladá Boleslav.', name_de:'eMBe Brauerei und Restaurant', desc_de:'Ein Restaurant mit eigener Mikrobrauerei in Mladá Boleslav.', url:'https://www.pojizeriapolabi.cz/region/single/1291'},
   {id:'plzensky-senk-dk', cat:'restaurant', name:'Plzeňský šenk — Restaurace Domu kultury', lat:50.4125, lng:14.9010,
     desc:'Restaurace a kavárna Felicie v mladoboleslavském Domě kultury, po rekonstrukci v roce 2016, s tanečním parketem a živou hudbou.', name_en:'Plzeňský šenk — Restaurace Domu kultury', desc_en:'The Felicie restaurant and café in the Mladá Boleslav House of Culture, renovated in 2016, with a dance floor and live music.', name_de:'Plzeňský šenk — Restaurant des Kulturhauses', desc_de:'Das Restaurant und Café Felicie im Kulturhaus von Mladá Boleslav, 2016 renoviert, mit Tanzfläche und Live-Musik.', url:'https://www.pojizeriapolabi.cz/region/single/1174'},
@@ -2750,6 +2777,7 @@ function toggleTripStop(id){
   if(entry){
     updateTripMarkerIcon(id);
   }
+  clearRoutePolyline();
   renderTripBar();
 }
 
@@ -2776,6 +2804,148 @@ function haversine(lat1,lng1,lat2,lng2){
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
+/* ---------------- Skutečná trasa po silnicích (Google Directions) ---------------- */
+const GOOGLE_MAPS_API_KEY = 'AIzaSyBGPBUd9OdzUgCqq1PiXthAf8gqHFtRw0M';
+let googleMapsLoadPromise = null;
+let routePolyline = null;
+
+function loadGoogleMaps(){
+  if(googleMapsLoadPromise) return googleMapsLoadPromise;
+  googleMapsLoadPromise = new Promise((resolve, reject)=>{
+    if(window.google && window.google.maps){ resolve(); return; }
+    const cbName = 'googleMapsReady_' + Date.now();
+    window[cbName] = ()=>{ resolve(); delete window[cbName]; };
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=${cbName}`;
+    script.async = true;
+    script.onerror = ()=> reject(new Error('Google Maps se nepodařilo načíst.'));
+    document.head.appendChild(script);
+  });
+  return googleMapsLoadPromise;
+}
+
+function clearRoutePolyline(){
+  if(routePolyline){ map.removeLayer(routePolyline); routePolyline = null; }
+}
+
+async function showRouteOnMap(){
+  if(tripStops.length < 2){
+    showToast('Přidej alespoň dvě zastávky, ať mám mezi čím počítat trasu.', null);
+    return;
+  }
+  const btn = document.getElementById('tripShowRouteBtn');
+  const originalText = btn.textContent;
+  btn.textContent = '⏳ Počítám trasu…';
+  btn.disabled = true;
+  try{
+    await loadGoogleMaps();
+    const stops = tripStops.map(id => PLACES.find(p=>p.id===id)).filter(Boolean);
+    const origin = { lat: stops[0].lat, lng: stops[0].lng };
+    const destination = { lat: stops[stops.length-1].lat, lng: stops[stops.length-1].lng };
+    const waypoints = stops.slice(1, -1).map(p => ({ location: { lat:p.lat, lng:p.lng }, stopover: true }));
+
+    const directionsService = new google.maps.DirectionsService();
+    const result = await new Promise((resolve, reject)=>{
+      directionsService.route({
+        origin, destination, waypoints,
+        travelMode: google.maps.TravelMode.DRIVING,
+        optimizeWaypoints: false
+      }, (res, status)=>{
+        if(status === 'OK') resolve(res);
+        else reject(new Error(status));
+      });
+    });
+
+    const route = result.routes[0];
+    const path = route.overview_path.map(p => [p.lat(), p.lng()]);
+
+    clearRoutePolyline();
+    routePolyline = L.polyline(path, { color:'#1E7A72', weight:5, opacity:0.85 }).addTo(map);
+    map.fitBounds(routePolyline.getBounds(), { padding:[40,40] });
+
+    let totalDistM = 0, totalDurS = 0;
+    route.legs.forEach(leg=>{ totalDistM += leg.distance.value; totalDurS += leg.duration.value; });
+    const km = (totalDistM/1000).toFixed(1);
+    const mins = Math.round(totalDurS/60);
+    document.getElementById('tripDistance').textContent =
+      `${stops.length} zastávek · ${km} km po silnici · cca ${mins} min jízdy`;
+
+  }catch(err){
+    console.warn('Route calculation failed: ' + safeErr(err));
+    showToast('Trasu se nepodařilo spočítat. Zkus to prosím znovu.', 'error');
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+}
+
+document.getElementById('tripShowRouteBtn').addEventListener('click', showRouteOnMap);
+
+let dragState = null;
+
+function attachChipDragHandlers(chip){
+  const handle = chip.querySelector('.drag-handle');
+
+  handle.addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    dragState = { chip };
+    chip.setPointerCapture(e.pointerId);
+    chip.classList.add('dragging');
+  });
+
+  chip.addEventListener('pointermove', (e)=>{
+    if(!dragState || dragState.chip !== chip) return;
+    const target = document.elementFromPoint(e.clientX, e.clientY);
+    const targetChip = target && target.closest && target.closest('.trip-stop-chip');
+    if(targetChip && targetChip !== chip && targetChip.parentElement === chip.parentElement){
+      const listEl = chip.parentElement;
+      const children = [...listEl.children];
+      if(children.indexOf(targetChip) < children.indexOf(chip)){
+        listEl.insertBefore(chip, targetChip);
+      } else {
+        listEl.insertBefore(chip, targetChip.nextSibling);
+      }
+      // čísla zastávek živě přečíslujeme podle aktuálního pořadí v DOMu
+      [...listEl.children].forEach((c, i)=>{
+        const numEl = c.querySelector('.n');
+        if(numEl) numEl.textContent = i+1;
+      });
+    }
+  });
+
+  function endDrag(e){
+    if(!dragState || dragState.chip !== chip) return;
+    dragState = null;
+    chip.classList.remove('dragging');
+    // pořadí polí synchronizujeme podle finálního pořadí prvků v DOMu
+    const listEl = chip.parentElement;
+    const newOrder = [...listEl.children].map(c => c.dataset.id).filter(Boolean);
+    if(newOrder.length === tripStops.length){
+      tripStops = newOrder;
+    }
+    clearRoutePolyline();
+    tripStops.forEach(id => updateTripMarkerIcon(id));
+    renderTripBarDistanceOnly();
+  }
+  chip.addEventListener('pointerup', endDrag);
+  chip.addEventListener('pointercancel', endDrag);
+}
+
+// Po přeuspořádání přepočítáme jen vzdálenost/text, ať se nepřekresluje celý
+// seznam (a nepřijdeme tak o rozjeté pointer capture v jiných situacích).
+function renderTripBarDistanceOnly(){
+  let dist = 0;
+  for(let i=0;i<tripStops.length-1;i++){
+    const a = PLACES.find(p=>p.id===tripStops[i]);
+    const b = PLACES.find(p=>p.id===tripStops[i+1]);
+    if(a && b) dist += haversine(a.lat,a.lng,b.lat,b.lng);
+  }
+  const distEl = document.getElementById('tripDistance');
+  if(tripStops.length >= 2){
+    distEl.textContent = `${tripStops.length} zastávek · ${dist.toFixed(1)} km vzdušnou čarou (skutečná trasa po silnici bude delší) · přetažením ⠿ změníš pořadí`;
+  }
+}
+
 function renderTripBar(){
   const listEl = document.getElementById('tripStopsList');
   listEl.innerHTML = '';
@@ -2784,12 +2954,15 @@ function renderTripBar(){
     if(!place) return;
     const chip = document.createElement('div');
     chip.className = 'trip-stop-chip';
-    chip.innerHTML = `<span class="n">${i+1}</span><span>${getName(place)}</span>`;
+    chip.dataset.id = id;
+    chip.innerHTML = `<span class="drag-handle" title="Přetažením změň pořadí">⠿</span><span class="n">${i+1}</span><span>${getName(place)}</span>`;
     const rm = document.createElement('button');
+    rm.className = 'remove';
     rm.textContent = '✕';
     rm.addEventListener('click', ()=> toggleTripStop(id));
     chip.appendChild(rm);
     listEl.appendChild(chip);
+    attachChipDragHandlers(chip);
   });
 
   let dist = 0;
@@ -2804,7 +2977,7 @@ function renderTripBar(){
   } else if(tripStops.length === 1){
     distEl.textContent = '1 zastávka vybrána — přidejte další';
   } else {
-    distEl.textContent = `${tripStops.length} zastávek · ${dist.toFixed(1)} km vzdušnou čarou (skutečná trasa po silnici bude delší)`;
+    distEl.textContent = `${tripStops.length} zastávek · ${dist.toFixed(1)} km vzdušnou čarou (skutečná trasa po silnici bude delší) · přetažením ⠿ změníš pořadí`;
   }
 }
 
@@ -2817,12 +2990,14 @@ document.getElementById('tripPlannerBtn').addEventListener('click', ()=>{
 document.getElementById('tripCloseBtn').addEventListener('click', ()=>{
   planningMode = false;
   tripBar.classList.remove('open');
+  clearRoutePolyline();
 });
 
 document.getElementById('tripClearBtn').addEventListener('click', ()=>{
   const ids = [...tripStops];
   tripStops = [];
   ids.forEach(id => updateTripMarkerIcon(id));
+  clearRoutePolyline();
   renderTripBar();
 });
 
